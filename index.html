@@ -1,0 +1,2064 @@
+<!doctype html>
+<html lang="th">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hospital Revenue Dashboard</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Prompt', 'Sarabun', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .metric-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #ffffff;
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="bg-gray-50">
+  <div class="min-h-full flex"><!-- Sidebar -->
+   <div class="gradient-bg w-64 min-h-full">
+    <div class="p-6">
+     <h1 id="dashboard-title" class="text-white text-xl font-bold mb-8">Hospital Revenue Analytics</h1><!-- Navigation Menu -->
+     <nav class="space-y-2">
+      <div class="nav-item active px-4 py-3 text-white cursor-pointer rounded-lg" onclick="showSection('overview')">
+       <div class="flex items-center">
+        <svg class="w-5 h-5 mr-3" fill="currentColor" viewbox="0 0 20 20"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+        </svg> Overview
+       </div>
+      </div>
+      <div class="nav-item px-4 py-3 text-white cursor-pointer rounded-lg" onclick="showSection('income')">
+       <div class="flex items-center">
+        <svg class="w-5 h-5 mr-3" fill="currentColor" viewbox="0 0 20 20"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path> <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path>
+        </svg> รายรับ
+       </div>
+      </div>
+      <div class="nav-item px-4 py-3 text-white cursor-pointer rounded-lg" onclick="showSection('expense')">
+       <div class="flex items-center">
+        <svg class="w-5 h-5 mr-3" fill="currentColor" viewbox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+        </svg> รายจ่าย
+       </div>
+      </div>
+      <div class="nav-item px-4 py-3 text-white cursor-pointer rounded-lg" onclick="showSection('productivity')">
+       <div class="flex items-center">
+        <svg class="w-5 h-5 mr-3" fill="currentColor" viewbox="0 0 20 20"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg> Productivity แยกฝ่าย
+       </div>
+      </div>
+     </nav>
+    </div>
+   </div><!-- Main Content -->
+   <div class="flex-1 p-8"><!-- Header with Hospital Name -->
+    <div class="mb-8">
+     <div class="flex justify-between items-center mb-6">
+      <div>
+       <h2 id="hospital-name" class="text-3xl font-bold text-gray-800">โรงพยาบาลท่ากระดาน</h2>
+       <p class="text-gray-600">Dashboard วิเคราะห์รายได้</p>
+      </div>
+      <div class="text-right">
+       <p class="text-sm text-gray-500">อัพเดทล่าสุด</p>
+       <p class="text-lg font-semibold text-gray-700" id="current-date"></p>
+      </div>
+     </div>
+    </div><!-- Content Sections -->
+    <div id="overview-section" class="section-content"><!-- Financial Summary Table -->
+     <div class="bg-white p-6 rounded-lg card-shadow mb-8">
+      <h3 class="text-xl font-semibold text-gray-800 mb-6">สรุปข้อมูลทางการเงิน (หน่วย: บาท)</h3>
+      <div class="overflow-x-auto">
+       <table class="w-full text-sm">
+        <thead>
+         <tr class="bg-gray-50">
+          <th class="text-left p-3 font-semibold text-gray-700">รายการ</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2565</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2566</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2567</th>
+          <th class="text-right p-3 font-semibold text-gray-700 bg-blue-50">2568</th>
+         </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+         <tr>
+          <td class="p-3 font-medium text-gray-900">เงินบำรุงคงเหลือ</td>
+          <td class="p-3 text-right text-green-600">9,866,449.65</td>
+          <td class="p-3 text-right text-green-600">12,128,216.38</td>
+          <td class="p-3 text-right text-green-600">11,202,559.81</td>
+          <td class="p-3 text-right text-green-600 bg-blue-50 font-semibold">5,621,160.91</td>
+         </tr>
+         <tr>
+          <td class="p-3 font-medium text-gray-900">ภาระหนี้สิน</td>
+          <td class="p-3 text-right text-red-600">4,148,801.36</td>
+          <td class="p-3 text-right text-red-600">5,046,204.04</td>
+          <td class="p-3 text-right text-red-600">4,747,463.01</td>
+          <td class="p-3 text-right text-red-600 bg-blue-50 font-semibold">6,199,498.52</td>
+         </tr>
+         <tr>
+          <td class="p-3 font-medium text-gray-900">ลูกหนี้(สะสม)ค่ารักษาพยาบาล</td>
+          <td class="p-3 text-right text-orange-600">1,883,518.87</td>
+          <td class="p-3 text-right text-orange-600">4,335,839.68</td>
+          <td class="p-3 text-right text-orange-600">10,500,593.50</td>
+          <td class="p-3 text-right text-orange-600 bg-blue-50 font-semibold">10,759,203.62</td>
+         </tr>
+         <tr class="bg-gray-50">
+          <td class="p-3 font-bold text-gray-900">เงินบำรุงคงเหลือหลังหักหนี้สิน</td>
+          <td class="p-3 text-right font-bold text-blue-600">5,717,648.29</td>
+          <td class="p-3 text-right font-bold text-blue-600">7,082,012.34</td>
+          <td class="p-3 text-right font-bold text-blue-600">6,455,096.80</td>
+          <td class="p-3 text-right font-bold text-red-600 bg-red-50">-578,337.61</td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div><!-- Financial Ratios -->
+     <div class="bg-white p-6 rounded-lg card-shadow mb-8">
+      <h3 class="text-xl font-semibold text-gray-800 mb-6">อัตราส่วนทางการเงิน</h3>
+      <div class="overflow-x-auto">
+       <table class="w-full text-sm">
+        <thead>
+         <tr class="bg-gray-50">
+          <th class="text-left p-3 font-semibold text-gray-700">อัตราส่วน</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2565</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2566</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2567</th>
+          <th class="text-right p-3 font-semibold text-gray-700 bg-blue-50">2568</th>
+         </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+         <tr>
+          <td class="p-3">
+           <div class="font-medium text-gray-900">
+            Current Ratio
+           </div>
+           <div class="text-xs text-gray-500">
+            ความสามารถในการชำระหนี้ระยะสั้น
+           </div>
+           <div class="text-xs text-gray-400">
+            = สินทรัพย์หมุนเวียน / หนี้สินหมุนเวียน
+           </div></td>
+          <td class="p-3 text-right text-green-600 font-semibold">3.14</td>
+          <td class="p-3 text-right text-green-600 font-semibold">3.50</td>
+          <td class="p-3 text-right text-green-600 font-semibold">4.84</td>
+          <td class="p-3 text-right text-yellow-600 font-semibold bg-blue-50">2.79</td>
+         </tr>
+         <tr>
+          <td class="p-3">
+           <div class="font-medium text-gray-900">
+            Quick Ratio
+           </div>
+           <div class="text-xs text-gray-500">
+            CR ที่เอาเฉพาะแปลงเป็นเงินสดได้
+           </div>
+           <div class="text-xs text-gray-400">
+            = (สินทรัพย์หมุนเวียน – สินค้าคงเหลือ) / หนี้สินหมุนเวียน
+           </div></td>
+          <td class="p-3 text-right text-green-600 font-semibold">2.83</td>
+          <td class="p-3 text-right text-green-600 font-semibold">3.26</td>
+          <td class="p-3 text-right text-green-600 font-semibold">4.59</td>
+          <td class="p-3 text-right text-yellow-600 font-semibold bg-blue-50">2.64</td>
+         </tr>
+         <tr>
+          <td class="p-3">
+           <div class="font-medium text-gray-900">
+            Cash Ratio
+           </div>
+           <div class="text-xs text-gray-500">
+            เงินสด
+           </div>
+           <div class="text-xs text-gray-400">
+            = เงินสด(ไม่นับลูกหนี้) / หนี้สินหมุนเวียน
+           </div></td>
+          <td class="p-3 text-right text-green-600 font-semibold">2.38</td>
+          <td class="p-3 text-right text-green-600 font-semibold">2.40</td>
+          <td class="p-3 text-right text-green-600 font-semibold">2.36</td>
+          <td class="p-3 text-right text-red-600 font-semibold bg-blue-50">0.91</td>
+         </tr>
+         <tr class="bg-gray-50">
+          <td class="p-3 font-bold text-gray-900">NET INCOME</td>
+          <td class="p-3 text-right font-bold text-red-600">-1,334,337.12</td>
+          <td class="p-3 text-right font-bold text-red-600">-568,838.75</td>
+          <td class="p-3 text-right font-bold text-green-600">3,654,100.98</td>
+          <td class="p-3 text-right font-bold text-red-600 bg-red-50">-1,313,807.82</td>
+         </tr>
+         <tr>
+          <td class="p-3 font-medium text-gray-900">Networking Capital</td>
+          <td class="p-3 text-right text-blue-600 font-semibold">8,878,634.38</td>
+          <td class="p-3 text-right text-blue-600 font-semibold">12,614,806.17</td>
+          <td class="p-3 text-right text-blue-600 font-semibold">18,212,923.60</td>
+          <td class="p-3 text-right text-blue-600 font-semibold bg-blue-50">11,123,611.54</td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div><!-- Accounts Receivable and Payable -->
+     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"><!-- Accounts Receivable -->
+      <div class="bg-white p-6 rounded-lg card-shadow">
+       <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">ลูกหนี้สะสม (บาท)</h3>
+       </div><!-- Summary View -->
+       <div class="space-y-3 mb-4">
+        <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg cursor-pointer hover:bg-yellow-100 transition-colors" onclick="showReceivablePopup('uc')"><span class="font-medium text-gray-700">UC (รวม) 👁️</span>
+         <div class="text-right">
+          <div class="font-semibold text-yellow-700">
+           ฿1.02 ล้าน
+          </div>
+          <div class="text-xs text-yellow-600">
+           9.50%
+          </div>
+         </div>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors" onclick="showReceivablePopup('sss')"><span class="font-medium text-gray-700">ประกันสังคม (รวม) 👁️</span>
+         <div class="text-right">
+          <div class="font-semibold text-blue-700">
+           ฿0.82 ล้าน
+          </div>
+          <div class="text-xs text-blue-600">
+           7.64%
+          </div>
+         </div>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors" onclick="showReceivablePopup('gov')"><span class="font-medium text-gray-700">ข้าราชการ/อปท/รัฐวิสาหกิจ 👁️</span>
+         <div class="text-right">
+          <div class="font-semibold text-green-700">
+           ฿1.44 ล้าน
+          </div>
+          <div class="text-xs text-green-600">
+           13.36%
+          </div>
+         </div>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg"><span class="font-medium text-gray-700">นอกสังกัด (รพ.สต.)</span>
+         <div class="text-right">
+          <div class="font-semibold text-red-700">
+           ฿7.16 ล้าน
+          </div>
+          <div class="text-xs text-red-600">
+           66.59%
+          </div>
+         </div>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors" onclick="showReceivablePopup('other')"><span class="font-medium text-gray-700">อื่นๆ 👁️</span>
+         <div class="text-right">
+          <div class="font-semibold text-gray-700">
+           ฿314 พัน
+          </div>
+          <div class="text-xs text-gray-600">
+           2.91%
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="border-t pt-3">
+        <div class="flex justify-between items-center font-bold text-lg"><span class="text-gray-800">รวมลูกหนี้</span> <span class="text-orange-600" id="total-receivable">10,759,203.62</span>
+        </div>
+       </div>
+      </div><!-- Accounts Payable -->
+      <div class="bg-white p-6 rounded-lg card-shadow">
+       <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">เจ้าหนี้สะสม (บาท)</h3>
+       </div><!-- Summary View -->
+       <div class="space-y-3 mb-4">
+        <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg cursor-pointer hover:bg-red-100 transition-colors" onclick="showPayablePopup('medical')"><span class="font-medium text-gray-700">ยา 👁️</span>
+         <div class="text-right">
+          <div class="font-semibold text-red-700">
+           ฿1.28 ล้าน
+          </div>
+          <div class="text-xs text-red-600">
+           20.58%
+          </div>
+         </div>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors" onclick="showPayablePopup('medical')"><span class="font-medium text-gray-700">Lab + วัสดุการแพทย์ 👁️</span>
+         <div class="text-right">
+          <div class="font-semibold text-blue-700">
+           ฿912 พัน
+          </div>
+          <div class="text-xs text-blue-600">
+           14.71%
+          </div>
+         </div>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg"><span class="font-medium text-gray-700">ค่าตอบแทน</span>
+         <div class="text-right">
+          <div class="font-semibold text-purple-700">
+           ฿1.29 ล้าน
+          </div>
+          <div class="text-xs text-purple-600">
+           20.75%
+          </div>
+         </div>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-orange-50 rounded-lg"><span class="font-medium text-gray-700">นค 1</span>
+         <div class="text-right">
+          <div class="font-semibold text-orange-700">
+           ฿1.18 ล้าน
+          </div>
+          <div class="text-xs text-orange-600">
+           19.10%
+          </div>
+         </div>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors" onclick="showPayablePopup('other-debt')"><span class="font-medium text-gray-700">เจ้าหนี้อื่น 👁️</span>
+         <div class="text-right">
+          <div class="font-semibold text-gray-700">
+           ฿1.16 ล้าน
+          </div>
+          <div class="text-xs text-gray-600">
+           18.79%
+          </div>
+         </div>
+        </div>
+        <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors" onclick="showPayablePopup('deposit')"><span class="font-medium text-gray-700">เงินรับฝากทั่วไป 👁️</span>
+         <div class="text-right">
+          <div class="font-semibold text-green-700">
+           ฿377 พัน
+          </div>
+          <div class="text-xs text-green-600">
+           6.08%
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="border-t pt-3">
+        <div class="flex justify-between items-center font-bold text-lg"><span class="text-gray-800">รวมเจ้าหนี้</span> <span class="text-red-600" id="total-payable">6,199,498.52</span>
+        </div>
+       </div>
+      </div>
+     </div><!-- Popup Modal for Receivables -->
+     <div id="receivable-popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="receivable-popup-content">
+       <div class="flex justify-between items-center mb-4">
+        <h3 id="receivable-popup-title" class="text-lg font-semibold text-gray-800"></h3><button onclick="closeReceivablePopup()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+       </div>
+       <div id="receivable-popup-body" class="space-y-3"><!-- Content will be populated by JavaScript -->
+       </div>
+       <div class="mt-6 text-right"><button onclick="closeReceivablePopup()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">ปิด</button>
+       </div>
+      </div>
+     </div><!-- Popup Modal for Payables -->
+     <div id="payable-popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="payable-popup-content">
+       <div class="flex justify-between items-center mb-4">
+        <h3 id="payable-popup-title" class="text-lg font-semibold text-gray-800"></h3><button onclick="closePayablePopup()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+       </div>
+       <div id="payable-popup-body" class="space-y-3"><!-- Content will be populated by JavaScript -->
+       </div>
+       <div class="mt-6 text-right"><button onclick="closePayablePopup()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">ปิด</button>
+       </div>
+      </div>
+     </div><!-- Charts -->
+     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="bg-white p-6 rounded-lg card-shadow">
+       <h3 class="text-lg font-semibold text-gray-800 mb-4">สัดส่วนลูกหนี้ตามสิทธิ</h3>
+       <canvas id="rightsChart" width="400" height="200"></canvas>
+      </div>
+      <div class="bg-white p-6 rounded-lg card-shadow">
+       <h3 class="text-lg font-semibold text-gray-800 mb-4">สัดส่วนเจ้าหนี้</h3>
+       <canvas id="payableChart" width="400" height="200"></canvas>
+      </div>
+     </div>
+    </div>
+    <div id="income-section" class="section-content hidden"><!-- Filter Controls -->
+     <div class="bg-white p-6 rounded-lg card-shadow mb-8">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">🔍 ตัวกรองข้อมูลรายรับ</h3>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+       <div><label for="income-year-filter" class="block text-sm font-medium text-gray-700 mb-2">ปี</label> <select id="income-year-filter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"> <option value="all">ทุกปี</option> <option value="2568" selected>2568</option> <option value="2567">2567</option> <option value="2566">2566</option> <option value="2565">2565</option> </select>
+       </div>
+       <div><label for="rights-filter" class="block text-sm font-medium text-gray-700 mb-2">สิทธิ</label> <select id="rights-filter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"> <option value="all">ทุกสิทธิ</option> <option value="uc">UC</option> <option value="direct">เบิกตรง</option> <option value="sss">ประกันสังคม</option> <option value="other">อื่นๆ</option> <option value="support">สนับสนุน</option> </select>
+       </div>
+       <div><label for="item-filter" class="block text-sm font-medium text-gray-700 mb-2">รายการ</label> <select id="item-filter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"> <option value="all">ทุกรายการ</option> <option value="uc-money">เงิน UC</option> <option value="uc-rights">สิทธิ UC (ตามจ่าย)</option> <option value="gov-officer">รายรับสิทธิข้าราชการ</option> <option value="state-enterprise">รายรับสิทธิพนักงานรัฐวิสาหกิจ</option> <option value="local-admin">รายรับสิทธิอปท.</option> <option value="social-security">รายรับประกันสังคม</option> <option value="covid-nhso">COVID-19 (สปสช.)</option> <option value="covid-sss">COVID-19 (ประกันสังคม)</option> <option value="self-pay">ชำระเงินเอง</option> <option value="car-act">พรบ.รถ</option> <option value="health-check">ตรวจสุขภาพ+ต่างด้าว+อุดหนุน IP</option> <option value="interest">ดอกเบี้ย</option> <option value="donation">เงินรับบริจาค</option> <option value="cf">CF (UC IP + UC OP + UC PP)</option> </select>
+       </div>
+       <div class="flex items-end"><button onclick="applyIncomeFilters()" class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"> 🔍 ค้นหา </button>
+       </div>
+      </div><!-- Quick Filter Buttons -->
+      <div class="flex flex-wrap gap-2 mb-4"><button onclick="setQuickFilter('high-growth')" class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm hover:bg-green-200 transition-colors"> 📈 รายการเติบโต </button> <button onclick="setQuickFilter('declining')" class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm hover:bg-red-200 transition-colors"> 📉 รายการลดลง </button> <button onclick="setQuickFilter('covid-related')" class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm hover:bg-yellow-200 transition-colors"> 🦠 COVID-19 </button> <button onclick="setQuickFilter('main-revenue')" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors"> 💰 รายรับหลัก </button> <button onclick="clearFilters()" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors"> 🔄 ล้างตัวกรอง </button>
+      </div><!-- Filter Results Summary -->
+      <div id="filter-summary" class="p-3 bg-blue-50 rounded-lg border border-blue-200 hidden">
+       <div class="flex items-center justify-between">
+        <div class="flex items-center">
+         <svg class="w-5 h-5 text-blue-600 mr-2" fill="currentColor" viewbox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"></path>
+         </svg><span id="filter-summary-text" class="text-blue-800 font-medium"></span>
+        </div><span id="filter-total" class="text-blue-900 font-bold"></span>
+       </div>
+      </div>
+     </div><!-- Filter Results Chart -->
+     <div id="filter-results-chart" class="bg-white p-6 rounded-lg card-shadow mb-8 hidden">
+      <div class="flex justify-between items-center mb-4">
+       <h3 class="text-xl font-semibold text-gray-800">ผลการกรองข้อมูลรายรับ</h3><button onclick="hideFilterChart()" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-5 h-5" fill="currentColor" viewbox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+        </svg></button>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+       <div>
+        <canvas id="filteredDataChart" width="400" height="300"></canvas>
+       </div>
+       <div>
+        <canvas id="filteredTrendChart" width="400" height="300"></canvas>
+       </div>
+      </div>
+      <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+        <div>
+         <p class="text-sm text-gray-600">รายการที่กรอง</p>
+         <p id="filtered-items-count" class="text-2xl font-bold text-blue-600">0</p>
+        </div>
+        <div>
+         <p class="text-sm text-gray-600">มูลค่ารวม</p>
+         <p id="filtered-total-value" class="text-2xl font-bold text-green-600">฿0</p>
+        </div>
+        <div>
+         <p class="text-sm text-gray-600">เปลี่ยนแปลงเฉลี่ย</p>
+         <p id="filtered-avg-change" class="text-2xl font-bold text-orange-600">0%</p>
+        </div>
+       </div>
+      </div>
+     </div><!-- Revenue by Rights Table -->
+     <div class="bg-white p-6 rounded-lg card-shadow mb-8">
+      <h3 class="text-xl font-semibold text-gray-800 mb-6">รายรับตามสิทธิการรักษา (หน่วย: บาท)</h3>
+      <div class="overflow-x-auto">
+       <table class="w-full text-sm">
+        <thead>
+         <tr class="bg-gray-50">
+          <th class="text-left p-3 font-semibold text-gray-700">สิทธิ</th>
+          <th class="text-left p-3 font-semibold text-gray-700">รายการ</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2565</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2566</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2567</th>
+          <th class="text-right p-3 font-semibold text-gray-700 bg-blue-50">2568</th>
+          <th class="text-right p-3 font-semibold text-gray-700">เปลี่ยนแปลง</th>
+         </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200"><!-- UC Section -->
+         <tr class="bg-yellow-50">
+          <td rowspan="3" class="p-3 font-semibold text-yellow-800 border-r">UC</td>
+          <td class="p-3">เงิน UC</td>
+          <td class="p-3 text-right">13,630,093.04</td>
+          <td class="p-3 text-right">18,191,385.95</td>
+          <td class="p-3 text-right">14,233,395.73</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">7,141,119.39</td>
+          <td class="p-3 text-right text-red-600 font-semibold">-49.83%</td>
+         </tr>
+         <tr class="bg-yellow-50">
+          <td class="p-3">สิทธิ UC (ตามจ่าย)</td>
+          <td class="p-3 text-right">3,655.00</td>
+          <td class="p-3 text-right">1,580.00</td>
+          <td class="p-3 text-right">3,895.00</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">337,293.86</td>
+          <td class="p-3 text-right text-green-600 font-semibold">+8559.66%</td>
+         </tr>
+         <tr class="bg-yellow-100 font-semibold">
+          <td class="p-3">รวมรายได้สิทธิ UC</td>
+          <td class="p-3 text-right">13,633,748.04</td>
+          <td class="p-3 text-right">18,192,965.95</td>
+          <td class="p-3 text-right">14,237,290.73</td>
+          <td class="p-3 text-right bg-blue-50">7,478,413.25</td>
+          <td class="p-3 text-right text-red-600">-47.47%</td>
+         </tr><!-- เบิกตรง Section -->
+         <tr class="bg-green-50">
+          <td rowspan="4" class="p-3 font-semibold text-green-800 border-r">เบิกตรง</td>
+          <td class="p-3">รายรับสิทธิข้าราชการ</td>
+          <td class="p-3 text-right">2,132,354.94</td>
+          <td class="p-3 text-right">3,149,452.39</td>
+          <td class="p-3 text-right">4,026,453.66</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">3,303,286.03</td>
+          <td class="p-3 text-right text-red-600 font-semibold">-17.96%</td>
+         </tr>
+         <tr class="bg-green-50">
+          <td class="p-3">รายรับสิทธิพนักงานรัฐวิสาหกิจ</td>
+          <td class="p-3 text-right">282,145.00</td>
+          <td class="p-3 text-right">44,127.00</td>
+          <td class="p-3 text-right">104,959.00</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">77,144.75</td>
+          <td class="p-3 text-right text-red-600 font-semibold">-26.50%</td>
+         </tr>
+         <tr class="bg-green-50">
+          <td class="p-3">รายรับสิทธิอปท.</td>
+          <td class="p-3 text-right">154,662.22</td>
+          <td class="p-3 text-right">206,303.14</td>
+          <td class="p-3 text-right">350,418.49</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">648,192.83</td>
+          <td class="p-3 text-right text-green-600 font-semibold">+84.98%</td>
+         </tr>
+         <tr class="bg-green-100 font-semibold">
+          <td class="p-3">รวมรายได้สิทธิเบิกได้</td>
+          <td class="p-3 text-right">2,569,162.16</td>
+          <td class="p-3 text-right">3,399,882.53</td>
+          <td class="p-3 text-right">4,481,831.15</td>
+          <td class="p-3 text-right bg-blue-50">4,028,623.61</td>
+          <td class="p-3 text-right text-red-600">-10.11%</td>
+         </tr><!-- ประกันสังคม Section -->
+         <tr class="bg-blue-50">
+          <td rowspan="2" class="p-3 font-semibold text-blue-800 border-r">ประกันสังคม</td>
+          <td class="p-3">รายรับประกันสังคม</td>
+          <td class="p-3 text-right">915,305.62</td>
+          <td class="p-3 text-right">1,272,438.11</td>
+          <td class="p-3 text-right">1,816,948.83</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">1,872,946.62</td>
+          <td class="p-3 text-right text-green-600 font-semibold">+3.08%</td>
+         </tr>
+         <tr class="bg-blue-100 font-semibold">
+          <td class="p-3">รวมรายได้สิทธิประกันสังคม</td>
+          <td class="p-3 text-right">915,305.62</td>
+          <td class="p-3 text-right">1,272,438.11</td>
+          <td class="p-3 text-right">1,816,948.83</td>
+          <td class="p-3 text-right bg-blue-50">1,872,946.62</td>
+          <td class="p-3 text-right text-green-600">+3.08%</td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div><!-- Other Revenue Table -->
+     <div class="bg-white p-6 rounded-lg card-shadow mb-8">
+      <h3 class="text-xl font-semibold text-gray-800 mb-6">รายรับอื่นๆ (หน่วย: บาท)</h3>
+      <div class="overflow-x-auto">
+       <table class="w-full text-sm">
+        <thead>
+         <tr class="bg-gray-50">
+          <th class="text-left p-3 font-semibold text-gray-700">รายการ</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2565</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2566</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2567</th>
+          <th class="text-right p-3 font-semibold text-gray-700 bg-blue-50">2568</th>
+          <th class="text-right p-3 font-semibold text-gray-700">เปลี่ยนแปลง</th>
+         </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+         <tr class="bg-red-50">
+          <td class="p-3 font-medium">COVID-19 (สปสช.)</td>
+          <td class="p-3 text-right">10,939,264.62</td>
+          <td class="p-3 text-right">3,463,394.43</td>
+          <td class="p-3 text-right">-</td>
+          <td class="p-3 text-right bg-blue-50">-</td>
+          <td class="p-3 text-right text-gray-500">-</td>
+         </tr>
+         <tr class="bg-red-50">
+          <td class="p-3 font-medium">COVID-19 (ประกันสังคม)</td>
+          <td class="p-3 text-right">589,119.60</td>
+          <td class="p-3 text-right">905,676.00</td>
+          <td class="p-3 text-right">-</td>
+          <td class="p-3 text-right bg-blue-50">-</td>
+          <td class="p-3 text-right text-gray-500">-</td>
+         </tr>
+         <tr>
+          <td class="p-3">กองทุนบุคคลที่มีปัญหาสถานะและสิทธิ</td>
+          <td class="p-3 text-right">596,607.26</td>
+          <td class="p-3 text-right">307,672.72</td>
+          <td class="p-3 text-right">66,446.04</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">536,071.34</td>
+          <td class="p-3 text-right text-green-600 font-semibold">+706.78%</td>
+         </tr>
+         <tr>
+          <td class="p-3">ชำระเงินเอง</td>
+          <td class="p-3 text-right">1,411,446.00</td>
+          <td class="p-3 text-right">1,466,069.50</td>
+          <td class="p-3 text-right">1,630,536.75</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">1,566,850.25</td>
+          <td class="p-3 text-right text-red-600 font-semibold">-3.91%</td>
+         </tr>
+         <tr>
+          <td class="p-3">พรบ.รถ</td>
+          <td class="p-3 text-right">60,949.00</td>
+          <td class="p-3 text-right">225,348.00</td>
+          <td class="p-3 text-right">259,003.00</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">129,792.00</td>
+          <td class="p-3 text-right text-red-600 font-semibold">-49.89%</td>
+         </tr>
+         <tr>
+          <td class="p-3">ตรวจสุขภาพ+ต่างด้าว+อุดหนุน IP</td>
+          <td class="p-3 text-right">1,108,073.92</td>
+          <td class="p-3 text-right">1,084,676.49</td>
+          <td class="p-3 text-right">1,676,757.70</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">1,718,537.01</td>
+          <td class="p-3 text-right text-green-600 font-semibold">+2.49%</td>
+         </tr>
+         <tr>
+          <td class="p-3">ดอกเบี้ย</td>
+          <td class="p-3 text-right">40,444.06</td>
+          <td class="p-3 text-right">50,315.87</td>
+          <td class="p-3 text-right">74,637.16</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">47,456.73</td>
+          <td class="p-3 text-right text-red-600 font-semibold">-36.42%</td>
+         </tr>
+         <tr>
+          <td class="p-3">กองทุนหลักประกันสุขภาพตำบล</td>
+          <td class="p-3 text-right">43,500.00</td>
+          <td class="p-3 text-right">126,612.00</td>
+          <td class="p-3 text-right">93,975.00</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">129,340.00</td>
+          <td class="p-3 text-right text-green-600 font-semibold">+37.65%</td>
+         </tr>
+         <tr class="bg-gray-100 font-bold">
+          <td class="p-3">รวมรายได้อื่นๆ</td>
+          <td class="p-3 text-right">14,789,404.46</td>
+          <td class="p-3 text-right">7,629,765.01</td>
+          <td class="p-3 text-right">3,801,355.65</td>
+          <td class="p-3 text-right bg-blue-50">4,128,047.33</td>
+          <td class="p-3 text-right text-green-600">+8.59%</td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div><!-- Support Revenue Table -->
+     <div class="bg-white p-6 rounded-lg card-shadow mb-8">
+      <h3 class="text-xl font-semibold text-gray-800 mb-6">รายรับสนับสนุน (หน่วย: บาท)</h3>
+      <div class="overflow-x-auto">
+       <table class="w-full text-sm">
+        <thead>
+         <tr class="bg-gray-50">
+          <th class="text-left p-3 font-semibold text-gray-700">รายการ</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2565</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2566</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2567</th>
+          <th class="text-right p-3 font-semibold text-gray-700 bg-blue-50">2568</th>
+         </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+         <tr>
+          <td class="p-3">เงินรับบริจาค</td>
+          <td class="p-3 text-right">535,010.00</td>
+          <td class="p-3 text-right">1,423,500.00</td>
+          <td class="p-3 text-right">632,001.00</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">178,875.00</td>
+         </tr>
+         <tr>
+          <td class="p-3">เงินค่าเสื่อม/งบลงทุน</td>
+          <td class="p-3 text-right">2,225,672.61</td>
+          <td class="p-3 text-right">1,573,444.29</td>
+          <td class="p-3 text-right">2,372,730.03</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">2,720,600.00</td>
+         </tr>
+         <tr>
+          <td class="p-3">CF (UC IP + UC OP + UC PP)</td>
+          <td class="p-3 text-right">1,050,027.98</td>
+          <td class="p-3 text-right">4,407,450.00</td>
+          <td class="p-3 text-right">2,657,128.00</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">500,000.00</td>
+         </tr>
+         <tr>
+          <td class="p-3">เงินสนับสนุนจากหน่วยงานอื่น</td>
+          <td class="p-3 text-right">78,420.00</td>
+          <td class="p-3 text-right">2,055,000.00</td>
+          <td class="p-3 text-right">1,150,000.00</td>
+          <td class="p-3 text-right bg-blue-50 font-semibold">2,934,000.00</td>
+         </tr>
+         <tr class="bg-green-100 font-bold">
+          <td class="p-3">รวมรายได้สนับสนุน</td>
+          <td class="p-3 text-right">3,889,130.59</td>
+          <td class="p-3 text-right">9,459,394.29</td>
+          <td class="p-3 text-right">6,811,859.03</td>
+          <td class="p-3 text-right bg-blue-50">6,333,475.00</td>
+         </tr>
+        </tbody>
+       </table>
+      </div><!-- Support Details -->
+      <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+       <h4 class="font-semibold text-gray-800 mb-3">รายละเอียดเงินสนับสนุนจากหน่วยงานอื่น ปี 2568</h4>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div class="space-y-2">
+         <div class="flex justify-between"><span>รพ.ทองผาภูมิ</span> <span class="font-semibold">1,934,000</span>
+         </div>
+         <div class="flex justify-between"><span>รพ.ไทรโยค</span> <span class="font-semibold">500,000</span>
+         </div>
+         <div class="flex justify-between"><span>รพ.เลาขวัญ</span> <span class="font-semibold">500,000</span>
+         </div>
+        </div>
+        <div class="text-xs text-gray-600">
+         <p><strong>ปี 2566:</strong> รพ.พหลฯ 2,000,000 (สนับสนุนตอนปี 66)</p>
+         <p><strong>ปี 2567:</strong> รพ.มะการักษ์ 1,000,000, วิงการกุศล 150,000</p>
+        </div>
+       </div>
+      </div>
+     </div><!-- Total Revenue Summary -->
+     <div class="bg-white p-6 rounded-lg card-shadow mb-8">
+      <h3 class="text-xl font-semibold text-gray-800 mb-6">สรุปรายรับรวม (หน่วย: บาท)</h3>
+      <div class="overflow-x-auto">
+       <table class="w-full text-sm">
+        <thead>
+         <tr class="bg-gray-50">
+          <th class="text-left p-3 font-semibold text-gray-700">รายการ</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2565</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2566</th>
+          <th class="text-right p-3 font-semibold text-gray-700">2567</th>
+          <th class="text-right p-3 font-semibold text-gray-700 bg-blue-50">2568</th>
+         </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+         <tr class="bg-blue-50">
+          <td class="p-3 font-bold text-blue-800">รวมรายได้จากการดำเนินการ</td>
+          <td class="p-3 text-right font-bold">31,907,620.28</td>
+          <td class="p-3 text-right font-bold">30,495,051.60</td>
+          <td class="p-3 text-right font-bold">24,337,426.36</td>
+          <td class="p-3 text-right font-bold bg-blue-100">17,508,030.81</td>
+         </tr>
+         <tr class="bg-green-50">
+          <td class="p-3 font-bold text-green-800">รวมรายได้สนับสนุน (CF + อื่นๆ)</td>
+          <td class="p-3 text-right font-bold">1,128,447.98</td>
+          <td class="p-3 text-right font-bold">6,462,450.00</td>
+          <td class="p-3 text-right font-bold">3,807,128.00</td>
+          <td class="p-3 text-right font-bold bg-green-100">3,434,000.00</td>
+         </tr>
+         <tr class="bg-purple-100">
+          <td class="p-3 font-bold text-purple-800 text-lg">รายรับจากการดำเนินการ + CF</td>
+          <td class="p-3 text-right font-bold text-lg">33,036,068.26</td>
+          <td class="p-3 text-right font-bold text-lg">36,957,501.60</td>
+          <td class="p-3 text-right font-bold text-lg">28,144,554.36</td>
+          <td class="p-3 text-right font-bold text-lg bg-purple-200">20,942,030.81</td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div><!-- Revenue Charts -->
+     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="bg-white p-6 rounded-lg card-shadow">
+       <h3 class="text-lg font-semibold text-gray-800 mb-4">แนวโน้มรายรับตามสิทธิ</h3>
+       <canvas id="incomeDetailChart" width="400" height="200"></canvas>
+      </div>
+      <div class="bg-white p-6 rounded-lg card-shadow">
+       <h3 class="text-lg font-semibold text-gray-800 mb-4">สัดส่วนรายรับ ปี 2568</h3>
+       <canvas id="incomeProportionChart" width="400" height="200"></canvas>
+      </div>
+     </div>
+    </div>
+    <div id="expense-section" class="section-content hidden">
+     <div class="bg-white p-6 rounded-lg card-shadow mb-8">
+      <div class="text-center py-16">
+       <div class="mb-4">
+        <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+       </div>
+       <h3 class="text-xl font-semibold text-gray-800 mb-2">รายจ่าย</h3>
+       <p class="text-gray-600">ข้อมูลรายจ่ายจะถูกเพิ่มในภายหลัง</p>
+      </div>
+     </div>
+    </div>
+    <div id="productivity-section" class="section-content hidden">
+     <div class="bg-white p-6 rounded-lg card-shadow mb-8">
+      <div class="text-center py-16">
+       <div class="mb-4">
+        <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+       </div>
+       <h3 class="text-xl font-semibold text-gray-800 mb-2">Productivity แยกฝ่าย</h3>
+       <p class="text-gray-600">ข้อมูล Productivity แยกตามฝ่ายจะถูกเพิ่มในภายหลัง</p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        // Default configuration
+        const defaultConfig = {
+            dashboard_title: "Hospital Revenue Analytics",
+            hospital_name: "โรงพยาบาลท่ากระดาน",
+            primary_color: "#667eea",
+            secondary_color: "#764ba2",
+            text_color: "#374151",
+            background_color: "#f9fafb",
+            accent_color: "#3b82f6"
+        };
+
+        // Initialize Element SDK
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig: defaultConfig,
+                onConfigChange: async (config) => {
+                    // Update dashboard title
+                    const titleElement = document.getElementById('dashboard-title');
+                    if (titleElement) {
+                        titleElement.textContent = config.dashboard_title || defaultConfig.dashboard_title;
+                    }
+
+                    // Update hospital name
+                    const hospitalElement = document.getElementById('hospital-name');
+                    if (hospitalElement) {
+                        hospitalElement.textContent = config.hospital_name || defaultConfig.hospital_name;
+                    }
+
+                    // Update colors
+                    const primaryColor = config.primary_color || defaultConfig.primary_color;
+                    const secondaryColor = config.secondary_color || defaultConfig.secondary_color;
+                    const textColor = config.text_color || defaultConfig.text_color;
+                    const backgroundColor = config.background_color || defaultConfig.background_color;
+                    const accentColor = config.accent_color || defaultConfig.accent_color;
+
+                    // Apply colors to elements
+                    document.body.style.backgroundColor = backgroundColor;
+                    document.body.style.color = textColor;
+
+                    // Update gradient background
+                    const gradientElements = document.querySelectorAll('.gradient-bg');
+                    gradientElements.forEach(el => {
+                        el.style.background = `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`;
+                    });
+
+                    // Update accent colors
+                    const buttons = document.querySelectorAll('button');
+                    buttons.forEach(btn => {
+                        if (btn.classList.contains('bg-blue-600')) {
+                            btn.style.backgroundColor = accentColor;
+                        }
+                    });
+                },
+                mapToCapabilities: (config) => ({
+                    recolorables: [
+                        {
+                            get: () => config.primary_color || defaultConfig.primary_color,
+                            set: (value) => {
+                                config.primary_color = value;
+                                window.elementSdk.setConfig({ primary_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.secondary_color || defaultConfig.secondary_color,
+                            set: (value) => {
+                                config.secondary_color = value;
+                                window.elementSdk.setConfig({ secondary_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.text_color || defaultConfig.text_color,
+                            set: (value) => {
+                                config.text_color = value;
+                                window.elementSdk.setConfig({ text_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.background_color || defaultConfig.background_color,
+                            set: (value) => {
+                                config.background_color = value;
+                                window.elementSdk.setConfig({ background_color: value });
+                            }
+                        },
+                        {
+                            get: () => config.accent_color || defaultConfig.accent_color,
+                            set: (value) => {
+                                config.accent_color = value;
+                                window.elementSdk.setConfig({ accent_color: value });
+                            }
+                        }
+                    ],
+                    borderables: [],
+                    fontEditable: undefined,
+                    fontSizeable: undefined
+                }),
+                mapToEditPanelValues: (config) => new Map([
+                    ["dashboard_title", config.dashboard_title || defaultConfig.dashboard_title],
+                    ["hospital_name", config.hospital_name || defaultConfig.hospital_name]
+                ])
+            });
+        }
+
+        // Set current date
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('th-TH');
+
+        // Navigation functionality
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('hidden');
+            
+            // Update navigation active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+        }
+
+        // Data by year
+        const yearlyData = {
+            2568: {
+                maintenance: 5621160.91,
+                debt: 6199498.52,
+                receivable: 10759203.62,
+                netMaintenance: -578337.61,
+                currentRatio: 2.79,
+                quickRatio: 2.64,
+                cashRatio: 0.91,
+                netIncome: -1313807.82,
+                networkingCapital: 11123611.54
+            },
+            2567: {
+                maintenance: 11202559.81,
+                debt: 4747463.01,
+                receivable: 10500593.50,
+                netMaintenance: 6455096.80,
+                currentRatio: 4.84,
+                quickRatio: 4.59,
+                cashRatio: 2.36,
+                netIncome: 3654100.98,
+                networkingCapital: 18212923.60
+            },
+            2566: {
+                maintenance: 12128216.38,
+                debt: 5046204.04,
+                receivable: 4335839.68,
+                netMaintenance: 7082012.34,
+                currentRatio: 3.50,
+                quickRatio: 3.26,
+                cashRatio: 2.40,
+                netIncome: -568838.75,
+                networkingCapital: 12614806.17
+            },
+            2565: {
+                maintenance: 9866449.65,
+                debt: 4148801.36,
+                receivable: 1883518.87,
+                netMaintenance: 5717648.29,
+                currentRatio: 3.14,
+                quickRatio: 2.83,
+                cashRatio: 2.38,
+                netIncome: -1334337.12,
+                networkingCapital: 8878634.38
+            }
+        };
+
+        // Update data by year
+        function updateDataByYear() {
+            const selectedYear = document.getElementById('year-filter').value;
+            const data = yearlyData[selectedYear];
+            
+            if (data) {
+                // Update financial summary table
+                updateFinancialTable(selectedYear);
+                
+                // Update totals in receivable and payable cards
+                document.getElementById('total-receivable').textContent = formatMillion(data.receivable);
+                document.getElementById('total-payable').textContent = formatMillion(data.debt);
+                
+                showToast(`ข้อมูลปี ${selectedYear} ได้รับการอัพเดทแล้ว`);
+            }
+        }
+
+        // Update financial table highlighting
+        function updateFinancialTable(selectedYear) {
+            // Remove all existing highlights
+            const cells = document.querySelectorAll('td.bg-blue-50, th.bg-blue-50');
+            cells.forEach(cell => {
+                cell.classList.remove('bg-blue-50', 'font-semibold');
+            });
+            
+            // Add highlight to selected year column
+            const yearColumns = {
+                '2565': 2,
+                '2566': 3,
+                '2567': 4,
+                '2568': 5
+            };
+            
+            const columnIndex = yearColumns[selectedYear];
+            if (columnIndex) {
+                const table = document.querySelector('.overflow-x-auto table');
+                const rows = table.querySelectorAll('tr');
+                
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('th, td');
+                    if (cells[columnIndex - 1]) {
+                        cells[columnIndex - 1].classList.add('bg-blue-50', 'font-semibold');
+                    }
+                });
+            }
+        }
+
+        // Format number with commas and currency
+        function formatNumber(num) {
+            return '฿' + num.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Format number in millions for better readability
+        function formatMillion(num) {
+            const millions = num / 1000000;
+            if (millions >= 1) {
+                return '฿' + millions.toFixed(2) + ' ล้าน';
+            } else if (num >= 1000) {
+                const thousands = num / 1000;
+                return '฿' + thousands.toFixed(0) + ' พัน';
+            } else {
+                return '฿' + num.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+        }
+
+        // Format number for display in cards and summaries
+        function formatCurrency(num) {
+            if (num >= 1000000) {
+                return '฿' + (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return '฿' + (num / 1000).toFixed(0) + 'K';
+            } else {
+                return '฿' + num.toLocaleString('th-TH');
+            }
+        }
+
+        // Receivable popup functions
+        function showReceivablePopup(detailType) {
+            const popup = document.getElementById('receivable-popup');
+            const popupContent = document.getElementById('receivable-popup-content');
+            const title = document.getElementById('receivable-popup-title');
+            const body = document.getElementById('receivable-popup-body');
+            
+            let titleText = '';
+            let content = '';
+            
+            switch(detailType) {
+                case 'uc':
+                    titleText = 'รายละเอียด UC';
+                    content = `
+                        <div class="flex justify-between items-center p-3 bg-yellow-50 rounded text-sm">
+                            <span>UC IP</span>
+                            <span class="font-semibold">฿856,379.25</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-yellow-50 rounded text-sm">
+                            <span>UC ในสังกัด</span>
+                            <span class="font-semibold">฿115,120.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-yellow-50 rounded text-sm">
+                            <span>UC OP เฉพาะ</span>
+                            <span class="font-semibold">฿50,479.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-yellow-50 rounded text-sm">
+                            <span>UC IP เฉพาะ</span>
+                            <span class="font-semibold">฿0.00</span>
+                        </div>
+                        <div class="border-t pt-3 mt-3">
+                            <div class="flex justify-between items-center font-bold">
+                                <span>รวม UC</span>
+                                <span class="text-yellow-700">฿1.02 ล้าน</span>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'sss':
+                    titleText = 'รายละเอียดประกันสังคม';
+                    content = `
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded text-sm">
+                            <span>ประกันสังคม OP</span>
+                            <span class="font-semibold">฿638,303.25</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded text-sm">
+                            <span>ประกันสังคม IP</span>
+                            <span class="font-semibold">฿167,331.25</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded text-sm">
+                            <span>ปกส.กองทุนทดแทน</span>
+                            <span class="font-semibold">฿13,115.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded text-sm">
+                            <span>ปกส.72ชม.</span>
+                            <span class="font-semibold">฿2,907.00</span>
+                        </div>
+                        <div class="border-t pt-3 mt-3">
+                            <div class="flex justify-between items-center font-bold">
+                                <span>รวมประกันสังคม</span>
+                                <span class="text-blue-700">฿0.82 ล้าน</span>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'gov':
+                    titleText = 'รายละเอียดข้าราชการ/อปท/รัฐวิสาหกิจ';
+                    content = `
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded text-sm">
+                            <span>กรมบัญชีกลาง OP</span>
+                            <span class="font-semibold">฿732,842.50</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded text-sm">
+                            <span>กรมบัญชีกลาง IP</span>
+                            <span class="font-semibold">฿244,500.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded text-sm">
+                            <span>อุปท. OP</span>
+                            <span class="font-semibold">฿425,821.75</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded text-sm">
+                            <span>อปท. IP</span>
+                            <span class="font-semibold">฿34,332.25</span>
+                        </div>
+                        <div class="border-t pt-3 mt-3">
+                            <div class="flex justify-between items-center font-bold">
+                                <span>รวมข้าราชการ</span>
+                                <span class="text-green-700">฿1.44 ล้าน</span>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'other':
+                    titleText = 'รายละเอียดอื่นๆ';
+                    content = `
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded text-sm">
+                            <span>ระบบบริการแพทย์ฉุกเฉิน</span>
+                            <span class="font-semibold">฿76,450.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded text-sm">
+                            <span>อุดหนุน IP</span>
+                            <span class="font-semibold">฿81,033.50</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded text-sm">
+                            <span>ชำระเงิน OP</span>
+                            <span class="font-semibold">฿90,793.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded text-sm">
+                            <span>เบิกต้นสังกัด IP</span>
+                            <span class="font-semibold">฿3,472.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded text-sm">
+                            <span>พรบ. OP</span>
+                            <span class="font-semibold">฿41,263.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded text-sm">
+                            <span>พรบ. IP</span>
+                            <span class="font-semibold">฿20,495.00</span>
+                        </div>
+                        <div class="border-t pt-3 mt-3">
+                            <div class="flex justify-between items-center font-bold">
+                                <span>รวมอื่นๆ</span>
+                                <span class="text-gray-700">฿314 พัน</span>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            title.textContent = titleText;
+            body.innerHTML = content;
+            
+            // Show popup with animation
+            popup.classList.remove('hidden');
+            setTimeout(() => {
+                popupContent.classList.remove('scale-95', 'opacity-0');
+                popupContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeReceivablePopup() {
+            const popup = document.getElementById('receivable-popup');
+            const popupContent = document.getElementById('receivable-popup-content');
+            
+            popupContent.classList.remove('scale-100', 'opacity-100');
+            popupContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                popup.classList.add('hidden');
+            }, 300);
+        }
+
+        // Payable popup functions
+        function showPayablePopup(detailType) {
+            const popup = document.getElementById('payable-popup');
+            const popupContent = document.getElementById('payable-popup-content');
+            const title = document.getElementById('payable-popup-title');
+            const body = document.getElementById('payable-popup-body');
+            
+            let titleText = '';
+            let content = '';
+            
+            switch(detailType) {
+                case 'medical':
+                    titleText = 'รายละเอียดยาและวัสดุการแพทย์';
+                    content = `
+                        <div class="flex justify-between items-center p-3 bg-red-50 rounded text-sm">
+                            <span>ยา</span>
+                            <span class="font-semibold">฿1,275,834.36</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded text-sm">
+                            <span>วัสดุการแพทย์</span>
+                            <span class="font-semibold">฿296,386.98</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded text-sm">
+                            <span>วัสดุวิทยาศาสตร์</span>
+                            <span class="font-semibold">฿615,304.50</span>
+                        </div>
+                        <div class="border-t pt-3 mt-3">
+                            <div class="flex justify-between items-center font-bold">
+                                <span>รวมยาและวัสดุ</span>
+                                <span class="text-red-700">฿2.19 ล้าน</span>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'other-debt':
+                    titleText = 'รายละเอียดเจ้าหนี้อื่น';
+                    content = `
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded text-sm">
+                            <span>วัสดุอื่น</span>
+                            <span class="font-semibold">฿270,232.70</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded text-sm">
+                            <span>เจ้าหนี้อื่น</span>
+                            <span class="font-semibold">฿661,795.26</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded text-sm">
+                            <span>ครุภัณฑ์</span>
+                            <span class="font-semibold">฿110,200.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded text-sm">
+                            <span>ค่าสาธารณุปโภค</span>
+                            <span class="font-semibold">฿122,587.38</span>
+                        </div>
+                        <div class="border-t pt-3 mt-3">
+                            <div class="flex justify-between items-center font-bold">
+                                <span>รวมเจ้าหนี้อื่น</span>
+                                <span class="text-gray-700">฿1.16 ล้าน</span>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'deposit':
+                    titleText = 'รายละเอียดเงินรับฝาก';
+                    content = `
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded text-sm">
+                            <span>ภาษีหัก ณ ที่จ่าย</span>
+                            <span class="font-semibold">฿13,651.59</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded text-sm">
+                            <span>เงินสมทบประกันสังคมส่วนของลูกจ้าง</span>
+                            <span class="font-semibold">฿0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded text-sm">
+                            <span>เงินมัดจำประกันสัญญา</span>
+                            <span class="font-semibold">฿363,158.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded text-sm">
+                            <span>เงินรับฝากกองทุน UC</span>
+                            <span class="font-semibold">฿0.00</span>
+                        </div>
+                        <div class="border-t pt-3 mt-3">
+                            <div class="flex justify-between items-center font-bold">
+                                <span>รวมเงินรับฝาก</span>
+                                <span class="text-green-700">฿377 พัน</span>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            title.textContent = titleText;
+            body.innerHTML = content;
+            
+            // Show popup with animation
+            popup.classList.remove('hidden');
+            setTimeout(() => {
+                popupContent.classList.remove('scale-95', 'opacity-0');
+                popupContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closePayablePopup() {
+            const popup = document.getElementById('payable-popup');
+            const popupContent = document.getElementById('payable-popup-content');
+            
+            popupContent.classList.remove('scale-100', 'opacity-100');
+            popupContent.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                popup.classList.add('hidden');
+            }, 300);
+        }
+
+        // Close popup when clicking outside
+        document.addEventListener('click', function(event) {
+            const receivablePopup = document.getElementById('receivable-popup');
+            const payablePopup = document.getElementById('payable-popup');
+            
+            if (event.target === receivablePopup) {
+                closeReceivablePopup();
+            }
+            if (event.target === payablePopup) {
+                closePayablePopup();
+            }
+        });
+
+        // Revenue data structure for filtering
+        const revenueData = {
+            2568: {
+                uc: {
+                    'uc-money': { value: 7141119.39, change: -49.83 },
+                    'uc-rights': { value: 337293.86, change: 8559.66 }
+                },
+                direct: {
+                    'gov-officer': { value: 3303286.03, change: -17.96 },
+                    'state-enterprise': { value: 77144.75, change: -26.50 },
+                    'local-admin': { value: 648192.83, change: 84.98 }
+                },
+                sss: {
+                    'social-security': { value: 1872946.62, change: 3.08 }
+                },
+                other: {
+                    'covid-nhso': { value: 0, change: 0 },
+                    'covid-sss': { value: 0, change: 0 },
+                    'self-pay': { value: 1566850.25, change: -3.91 },
+                    'car-act': { value: 129792.00, change: -49.89 },
+                    'health-check': { value: 1718537.01, change: 2.49 },
+                    'interest': { value: 47456.73, change: -36.42 }
+                },
+                support: {
+                    'donation': { value: 178875.00, change: 0 },
+                    'cf': { value: 500000.00, change: 0 }
+                }
+            },
+            2567: {
+                uc: {
+                    'uc-money': { value: 14233395.73, change: 0 },
+                    'uc-rights': { value: 3895.00, change: 0 }
+                },
+                direct: {
+                    'gov-officer': { value: 4026453.66, change: 0 },
+                    'state-enterprise': { value: 104959.00, change: 0 },
+                    'local-admin': { value: 350418.49, change: 0 }
+                },
+                sss: {
+                    'social-security': { value: 1816948.83, change: 0 }
+                },
+                other: {
+                    'covid-nhso': { value: 0, change: 0 },
+                    'covid-sss': { value: 0, change: 0 },
+                    'self-pay': { value: 1630536.75, change: 0 },
+                    'car-act': { value: 259003.00, change: 0 },
+                    'health-check': { value: 1676757.70, change: 0 },
+                    'interest': { value: 74637.16, change: 0 }
+                },
+                support: {
+                    'donation': { value: 632001.00, change: 0 },
+                    'cf': { value: 2657128.00, change: 0 }
+                }
+            }
+        };
+
+        // Filter functionality
+        function applyFilters() {
+            const year = document.getElementById('year-filter').value;
+            const department = document.getElementById('department-filter').value;
+            const rights = document.getElementById('rights-filter').value;
+            
+            // Show loading state
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'กำลังค้นหา...';
+            button.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+                
+                // Update data by year
+                updateDataByYear();
+                
+                // Update charts with filtered data
+                updateCharts();
+                
+                // Show success message
+                showToast('ข้อมูลได้รับการอัพเดทแล้ว');
+            }, 1000);
+        }
+
+        // Income filter functionality
+        function applyIncomeFilters() {
+            const year = document.getElementById('income-year-filter').value;
+            const rights = document.getElementById('rights-filter').value;
+            const item = document.getElementById('item-filter').value;
+            
+            // Show loading state
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'กำลังค้นหา...';
+            button.disabled = true;
+            
+            // Filter data based on selections
+            const filteredData = filterRevenueData(year, rights, item);
+            
+            // Simulate API call
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+                
+                // Update tables and charts with filtered data
+                updateIncomeDisplay(filteredData, year, rights, item);
+                
+                // Show filter summary
+                showFilterSummary(filteredData, year, rights, item);
+                
+                // Show success message
+                showToast('ตัวกรองได้รับการปรับปรุงแล้ว');
+            }, 800);
+        }
+
+        // Filter revenue data based on criteria
+        function filterRevenueData(year, rights, item) {
+            let filteredData = {};
+            let totalValue = 0;
+            let itemCount = 0;
+            
+            // Get years to process
+            const yearsToProcess = year === 'all' ? ['2565', '2566', '2567', '2568'] : [year];
+            
+            yearsToProcess.forEach(y => {
+                if (!revenueData[y]) return;
+                
+                const yearData = revenueData[y];
+                
+                // Filter by rights
+                const rightsToProcess = rights === 'all' ? Object.keys(yearData) : [rights];
+                
+                rightsToProcess.forEach(r => {
+                    if (!yearData[r]) return;
+                    
+                    const rightsData = yearData[r];
+                    
+                    // Filter by item
+                    const itemsToProcess = item === 'all' ? Object.keys(rightsData) : [item];
+                    
+                    itemsToProcess.forEach(i => {
+                        if (rightsData[i]) {
+                            if (!filteredData[y]) filteredData[y] = {};
+                            if (!filteredData[y][r]) filteredData[y][r] = {};
+                            filteredData[y][r][i] = rightsData[i];
+                            totalValue += rightsData[i].value;
+                            itemCount++;
+                        }
+                    });
+                });
+            });
+            
+            return {
+                data: filteredData,
+                totalValue: totalValue,
+                itemCount: itemCount
+            };
+        }
+
+        // Update income display with filtered data
+        function updateIncomeDisplay(filteredData, year, rights, item) {
+            // Show filter results chart
+            showFilterResultsChart(filteredData, year, rights, item);
+            
+            // Highlight filtered rows in tables
+            highlightFilteredRows(year, rights, item);
+            
+            // Update charts with filtered data
+            updateIncomeCharts(filteredData);
+        }
+
+        // Update summary cards
+        function updateSummaryCards(filteredData) {
+            // This would update the summary cards with filtered totals
+            // For demo purposes, we'll just add a visual indicator
+            const cards = document.querySelectorAll('#income-section .bg-gradient-to-r');
+            cards.forEach(card => {
+                card.style.opacity = '0.7';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                }, 300);
+            });
+        }
+
+        // Highlight filtered rows in tables
+        function highlightFilteredRows(year, rights, item) {
+            // Remove existing highlights
+            const rows = document.querySelectorAll('#income-section tr');
+            rows.forEach(row => {
+                row.classList.remove('bg-yellow-100', 'ring-2', 'ring-yellow-400');
+            });
+            
+            // Add highlights based on filters
+            if (rights !== 'all' || item !== 'all') {
+                const targetRows = getTargetRows(rights, item);
+                targetRows.forEach(selector => {
+                    const elements = document.querySelectorAll(selector);
+                    elements.forEach(el => {
+                        el.classList.add('bg-yellow-100', 'ring-2', 'ring-yellow-400');
+                    });
+                });
+            }
+        }
+
+        // Get target rows for highlighting
+        function getTargetRows(rights, item) {
+            const selectors = [];
+            
+            if (rights === 'uc' || item.startsWith('uc-')) {
+                selectors.push('tr.bg-yellow-50', 'tr.bg-yellow-100');
+            }
+            if (rights === 'direct' || ['gov-officer', 'state-enterprise', 'local-admin'].includes(item)) {
+                selectors.push('tr.bg-green-50', 'tr.bg-green-100');
+            }
+            if (rights === 'sss' || item === 'social-security') {
+                selectors.push('tr.bg-blue-50', 'tr.bg-blue-100');
+            }
+            
+            return selectors;
+        }
+
+        // Show filter summary
+        function showFilterSummary(filteredData, year, rights, item) {
+            const summary = document.getElementById('filter-summary');
+            const summaryText = document.getElementById('filter-summary-text');
+            const filterTotal = document.getElementById('filter-total');
+            
+            let text = 'แสดงข้อมูล: ';
+            const filters = [];
+            
+            if (year !== 'all') filters.push(`ปี ${year}`);
+            if (rights !== 'all') {
+                const rightsNames = {
+                    'uc': 'UC',
+                    'direct': 'เบิกตรง',
+                    'sss': 'ประกันสังคม',
+                    'other': 'อื่นๆ',
+                    'support': 'สนับสนุน'
+                };
+                filters.push(rightsNames[rights]);
+            }
+            if (item !== 'all') {
+                const itemElement = document.querySelector(`#item-filter option[value="${item}"]`);
+                if (itemElement) filters.push(itemElement.textContent);
+            }
+            
+            if (filters.length > 0) {
+                text += filters.join(' • ');
+                summaryText.textContent = text;
+                filterTotal.textContent = `฿${(filteredData.totalValue / 1000000).toFixed(2)}M (${filteredData.itemCount} รายการ)`;
+                summary.classList.remove('hidden');
+            } else {
+                summary.classList.add('hidden');
+            }
+        }
+
+        // Quick filter functions
+        function setQuickFilter(filterType) {
+            const yearFilter = document.getElementById('income-year-filter');
+            const rightsFilter = document.getElementById('rights-filter');
+            const itemFilter = document.getElementById('item-filter');
+            
+            // Reset filters first
+            yearFilter.value = 'all';
+            rightsFilter.value = 'all';
+            itemFilter.value = 'all';
+            
+            switch(filterType) {
+                case 'high-growth':
+                    // Show items with positive growth
+                    itemFilter.value = 'local-admin'; // อปท. +84.98%
+                    break;
+                case 'declining':
+                    // Show items with negative growth
+                    itemFilter.value = 'uc-money'; // UC -49.83%
+                    break;
+                case 'covid-related':
+                    // Show COVID-19 related items
+                    rightsFilter.value = 'other';
+                    itemFilter.value = 'covid-nhso';
+                    break;
+                case 'main-revenue':
+                    // Show main revenue sources
+                    rightsFilter.value = 'uc';
+                    break;
+            }
+            
+            // Apply the filter
+            applyIncomeFilters();
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            document.getElementById('income-year-filter').value = 'all';
+            document.getElementById('rights-filter').value = 'all';
+            document.getElementById('item-filter').value = 'all';
+            
+            // Hide filter summary
+            document.getElementById('filter-summary').classList.add('hidden');
+            
+            // Hide filter results chart
+            document.getElementById('filter-results-chart').classList.add('hidden');
+            
+            // Remove highlights
+            const rows = document.querySelectorAll('#income-section tr');
+            rows.forEach(row => {
+                row.classList.remove('bg-yellow-100', 'ring-2', 'ring-yellow-400');
+            });
+            
+            showToast('ตัวกรองถูกล้างแล้ว');
+        }
+
+        // Show filter results chart
+        function showFilterResultsChart(filteredData, year, rights, item) {
+            const chartContainer = document.getElementById('filter-results-chart');
+            chartContainer.classList.remove('hidden');
+            
+            // Update statistics
+            document.getElementById('filtered-items-count').textContent = filteredData.itemCount;
+            document.getElementById('filtered-total-value').textContent = `฿${(filteredData.totalValue / 1000000).toFixed(2)}M`;
+            
+            // Calculate average change
+            let totalChange = 0;
+            let changeCount = 0;
+            Object.values(filteredData.data).forEach(yearData => {
+                Object.values(yearData).forEach(rightsData => {
+                    Object.values(rightsData).forEach(itemData => {
+                        if (itemData.change !== 0) {
+                            totalChange += itemData.change;
+                            changeCount++;
+                        }
+                    });
+                });
+            });
+            const avgChange = changeCount > 0 ? (totalChange / changeCount).toFixed(2) : 0;
+            document.getElementById('filtered-avg-change').textContent = `${avgChange}%`;
+            
+            // Create charts
+            createFilteredDataChart(filteredData, year, rights, item);
+            createFilteredTrendChart(filteredData, year, rights, item);
+        }
+
+        // Hide filter results chart
+        function hideFilterChart() {
+            document.getElementById('filter-results-chart').classList.add('hidden');
+        }
+
+        // Create filtered data chart (pie/doughnut)
+        function createFilteredDataChart(filteredData, year, rights, item) {
+            const ctx = document.getElementById('filteredDataChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.filteredDataChartInstance) {
+                window.filteredDataChartInstance.destroy();
+            }
+            
+            // Prepare data for chart
+            const labels = [];
+            const data = [];
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+            
+            let colorIndex = 0;
+            Object.entries(filteredData.data).forEach(([yearKey, yearData]) => {
+                Object.entries(yearData).forEach(([rightsKey, rightsData]) => {
+                    Object.entries(rightsData).forEach(([itemKey, itemData]) => {
+                        const itemName = getItemDisplayName(itemKey);
+                        const displayLabel = year === 'all' ? `${itemName} (${yearKey})` : itemName;
+                        labels.push(displayLabel);
+                        data.push(itemData.value / 1000000); // Convert to millions
+                    });
+                });
+            });
+            
+            window.filteredDataChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'สัดส่วนรายรับที่กรอง'
+                        },
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ฿' + context.parsed.toFixed(2) + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create filtered trend chart (line/bar)
+        function createFilteredTrendChart(filteredData, year, rights, item) {
+            const ctx = document.getElementById('filteredTrendChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.filteredTrendChartInstance) {
+                window.filteredTrendChartInstance.destroy();
+            }
+            
+            if (year !== 'all') {
+                // Show comparison chart for single year
+                createComparisonChart(ctx, filteredData, year);
+            } else {
+                // Show trend chart for multiple years
+                createTrendChart(ctx, filteredData);
+            }
+        }
+
+        // Create comparison chart for single year
+        function createComparisonChart(ctx, filteredData, year) {
+            const labels = [];
+            const values = [];
+            const changes = [];
+            const colors = [];
+            
+            Object.entries(filteredData.data[year] || {}).forEach(([rightsKey, rightsData]) => {
+                Object.entries(rightsData).forEach(([itemKey, itemData]) => {
+                    labels.push(getItemDisplayName(itemKey));
+                    values.push(itemData.value / 1000000);
+                    changes.push(itemData.change);
+                    colors.push(itemData.change >= 0 ? '#10b981' : '#ef4444');
+                });
+            });
+            
+            window.filteredTrendChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'มูลค่า (ล้านบาท)',
+                        data: values,
+                        backgroundColor: colors,
+                        borderColor: colors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `เปรียบเทียบรายรับ ปี ${year}`
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function(context) {
+                                    const change = changes[context.dataIndex];
+                                    return change !== 0 ? `เปลี่ยนแปลง: ${change.toFixed(2)}%` : '';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '฿' + value + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create trend chart for multiple years
+        function createTrendChart(ctx, filteredData) {
+            const datasets = [];
+            const years = Object.keys(filteredData.data).sort();
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+            
+            // Group data by item
+            const itemGroups = {};
+            Object.entries(filteredData.data).forEach(([yearKey, yearData]) => {
+                Object.entries(yearData).forEach(([rightsKey, rightsData]) => {
+                    Object.entries(rightsData).forEach(([itemKey, itemData]) => {
+                        if (!itemGroups[itemKey]) {
+                            itemGroups[itemKey] = {};
+                        }
+                        itemGroups[itemKey][yearKey] = itemData.value / 1000000;
+                    });
+                });
+            });
+            
+            let colorIndex = 0;
+            Object.entries(itemGroups).forEach(([itemKey, yearValues]) => {
+                const data = years.map(year => yearValues[year] || 0);
+                datasets.push({
+                    label: getItemDisplayName(itemKey),
+                    data: data,
+                    borderColor: colors[colorIndex % colors.length],
+                    backgroundColor: colors[colorIndex % colors.length] + '20',
+                    tension: 0.4
+                });
+                colorIndex++;
+            });
+            
+            window.filteredTrendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'แนวโน้มรายรับที่กรอง'
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '฿' + value + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Get display name for item
+        function getItemDisplayName(itemKey) {
+            const itemNames = {
+                'uc-money': 'เงิน UC',
+                'uc-rights': 'สิทธิ UC',
+                'gov-officer': 'ข้าราชการ',
+                'state-enterprise': 'รัฐวิสาหกิจ',
+                'local-admin': 'อปท.',
+                'social-security': 'ประกันสังคม',
+                'covid-nhso': 'COVID-19 (สปสช.)',
+                'covid-sss': 'COVID-19 (ปกส.)',
+                'self-pay': 'ชำระเงินเอง',
+                'car-act': 'พรบ.รถ',
+                'health-check': 'ตรวจสุขภาพ',
+                'interest': 'ดอกเบี้ย',
+                'donation': 'เงินบริจาค',
+                'cf': 'CF'
+            };
+            return itemNames[itemKey] || itemKey;
+        }
+
+        // Update income charts with filtered data
+        function updateIncomeCharts(filteredData) {
+            // This would update the charts with filtered data
+            // For demo purposes, we'll add a visual effect
+            const charts = document.querySelectorAll('#income-section canvas');
+            charts.forEach(chart => {
+                chart.style.opacity = '0.7';
+                setTimeout(() => {
+                    chart.style.opacity = '1';
+                }, 500);
+            });
+        }
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Rights Chart - Updated with actual receivables data
+            const rightsCtx = document.getElementById('rightsChart').getContext('2d');
+            new Chart(rightsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['นอกสังกัด (รพ.สต.)', 'ข้าราชการ/อปท/รัฐวิสาหกิจ', 'UC (รวม)', 'ประกันสังคม (รวม)', 'อื่นๆ'],
+                    datasets: [{
+                        data: [66.59, 13.36, 9.50, 7.64, 2.91],
+                        backgroundColor: [
+                            '#ef4444',
+                            '#10b981',
+                            '#fbbf24',
+                            '#3b82f6',
+                            '#6b7280'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Payable Chart - Donut chart for creditors
+            const payableCtx = document.getElementById('payableChart').getContext('2d');
+            new Chart(payableCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['ยา', 'ค่าตอบแทน', 'นค 1', 'เจ้าหนี้อื่น', 'Lab + วัสดุการแพทย์', 'เงินรับฝากทั่วไป'],
+                    datasets: [{
+                        data: [20.58, 20.75, 19.10, 18.79, 14.71, 6.08],
+                        backgroundColor: [
+                            '#ef4444',
+                            '#8b5cf6',
+                            '#f97316',
+                            '#6b7280',
+                            '#3b82f6',
+                            '#10b981'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Income Detail Chart - Revenue Trend by Rights
+            const incomeCtx = document.getElementById('incomeDetailChart').getContext('2d');
+            new Chart(incomeCtx, {
+                type: 'line',
+                data: {
+                    labels: ['2565', '2566', '2567', '2568'],
+                    datasets: [
+                        {
+                            label: 'UC (รวม)',
+                            data: [13.63, 18.19, 14.24, 7.48],
+                            borderColor: '#fbbf24',
+                            backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'เบิกตรง',
+                            data: [2.57, 3.40, 4.48, 4.03],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'ประกันสังคม',
+                            data: [0.92, 1.27, 1.82, 1.87],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'อื่นๆ',
+                            data: [14.79, 7.63, 3.80, 4.13],
+                            borderColor: '#6b7280',
+                            backgroundColor: 'rgba(107, 114, 128, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '฿' + value + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Income Proportion Chart - 2568 Revenue Distribution
+            const incomeProportionCtx = document.getElementById('incomeProportionChart').getContext('2d');
+            new Chart(incomeProportionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['UC (รวม)', 'เบิกตรง', 'ประกันสังคม', 'อื่นๆ'],
+                    datasets: [{
+                        data: [42.7, 23.0, 10.7, 23.6],
+                        backgroundColor: [
+                            '#fbbf24',
+                            '#10b981',
+                            '#3b82f6',
+                            '#6b7280'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Expense and Productivity charts will be added later
+        }
+
+        function updateCharts() {
+            // This function would update charts with filtered data
+            // For demo purposes, we'll just reinitialize them
+            initCharts();
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+        });
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9979b2f5d0a27337',t:'MTc2MTk4MjM1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
