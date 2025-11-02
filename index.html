@@ -990,57 +990,34 @@
         }
 
         function selectSubmenu(element, sectionName) {
-    // Remove active class from all submenu items
-    document.querySelectorAll('.submenu-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    // Add active class to clicked item
-    element.classList.add('active');
-    
-    // Update current section
-    currentSection = sectionName;
-    document.getElementById('current-section').textContent = sectionName;
-    
-    // Show/hide filters based on section
-    updateFiltersVisibility(sectionName);
-
-    // ✅ เพิ่มส่วนนี้เข้ามา
-    const expensesMenus = [
-        'รายจ่ายด้านบุคลากร',
-        'ค่าใช้สอย Maintainance ระบบ',
-        'ค่าสาธารณูปโภค',
-        'ค่ายาและเวชภัณฑ์',
-        'ค่าวัสดุทั่วไป',
-        'ค่าใช้จ่ายตามแผนงาน/โครงการ',
-        'ค่าใช้จ่ายในการลงทุน',
-        'สนับสนุนให้ รพ.สต. และ สสอ.',
-        'ค่าใช้จ่าย อื่นๆ',
-        'ค่าใช้จ่ายเงินบริจาค'
-    ];
-
-    if (expensesMenus.includes(sectionName)) {
-        // 🔹 ซ่อนทุกอย่างให้เป็นหน้าว่าง
-        document.getElementById('filters-container').style.display = 'none';  // ซ่อนตัวกรองทั้งหมด
-        document.getElementById('metrics-grid').innerHTML = '<div style="padding:60px; text-align:center; color:#6b7280;">ยังไม่มีข้อมูลสำหรับหมวดรายจ่าย</div>';
-        document.querySelectorAll('.data-table').forEach(table => table.style.display = 'none');
-        document.querySelector('.chart-container').style.display = 'none';
-        return; // ออกจากฟังก์ชัน ไม่ให้ไปเรียก updateData()
-    }
-
-    // Update data display based on section
-    if (sectionName === 'รายรับสิทธิการรักษา') {
-        showRevenueRightsData();
-    } else if (sectionName === 'รายได้อื่นๆ') {
-        showOtherIncomeData();
-    } else if (sectionName === 'รายได้จากการดำเนินการ') {
-        showOperatingIncomeData();
-    } else {
-        updateData();
-    }
-}
-
-
+            // Remove active class from all submenu items
+            document.querySelectorAll('.submenu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to clicked item
+            element.classList.add('active');
+            
+            // Update current section
+            currentSection = sectionName;
+            document.getElementById('current-section').textContent = sectionName;
+            
+            // Show/hide filters based on section
+            updateFiltersVisibility(sectionName);
+            
+            // Update data display based on section
+            if (sectionName === 'รายรับสิทธิการรักษา') {
+                showRevenueRightsData();
+            } else if (sectionName === 'รายได้อื่นๆ') {
+                showOtherIncomeData();
+            } else if (sectionName === 'รายได้จากการดำเนินการ') {
+                showOperatingIncomeData();
+            } else if (sectionName === 'รายจ่ายด้านบุคลากร') {
+                showPersonnelExpensesData();
+            } else {
+                updateData();
+            }
+        }
 
         function updateFiltersVisibility(sectionName) {
             const departmentFilter = document.getElementById('department-filter-group');
@@ -2336,6 +2313,849 @@
             });
         }
 
+        // Personnel expenses chart data mapping for popup display
+        const personnelExpensesDataMapping = {
+            'ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ (ล้านบาท)': {
+                '2565': '4,541,636.25 บาท',
+                '2566': '4,544,211.25 บาท',
+                '2567': '5,174,111.81 บาท',
+                '2568': '5,501,398.14 บาท'
+            },
+            'ค่าจ้างพนักงานกระทรวงสาธารณสุข (ล้านบาท)': {
+                '2565': '2,523,700.00 บาท',
+                '2566': '1,761,660.00 บาท',
+                '2567': '2,395,480.00 บาท',
+                '2568': '2,668,452.00 บาท'
+            },
+            'ค่าตอบแทน ฉ.11 (ล้านบาท)': {
+                '2565': '2,215,841.00 บาท',
+                '2566': '1,903,671.00 บาท',
+                '2567': '1,801,700.00 บาท',
+                '2568': '1,859,785.00 บาท'
+            },
+            'ค่าจ้างลูกจ้างชั่วคราวรายเดือน (ล้านบาท)': {
+                '2565': '441,840.00 บาท',
+                '2566': '1,909,810.00 บาท',
+                '2567': '1,384,480.00 บาท',
+                '2568': '720,270.00 บาท'
+            }
+        };
+
+        function showPersonnelExpensesData() {
+            // Show filters for this section with personnel expense filter
+            document.getElementById('filters-container').style.display = 'flex';
+            
+            // Add personnel expense filter
+            addPersonnelExpenseFilter();
+            
+            // Update metrics to show personnel expenses summary
+            updatePersonnelExpensesMetrics('ข้อมูลทั้งหมด');
+            
+            // Update chart for personnel expenses
+            updatePersonnelExpensesChart('ข้อมูลทั้งหมด');
+            
+            // Show personnel expenses table
+            showPersonnelExpensesTable();
+        }
+
+        function addPersonnelExpenseFilter() {
+            // Remove existing personnel filter if exists
+            const existingFilter = document.getElementById('personnel-filter-group');
+            if (existingFilter) {
+                existingFilter.remove();
+            }
+
+            // Hide department and rights filters for personnel expenses
+            document.getElementById('department-filter-group').style.display = 'none';
+            document.getElementById('rights-filter-group').style.display = 'none';
+
+            // Add personnel expense filter
+            const filtersContainer = document.getElementById('filters-container');
+            const personnelFilterGroup = document.createElement('div');
+            personnelFilterGroup.className = 'filter-group';
+            personnelFilterGroup.id = 'personnel-filter-group';
+            personnelFilterGroup.innerHTML = `
+                <label for="personnel-filter">รายการค่าใช้จ่าย</label>
+                <select id="personnel-filter" onchange="updatePersonnelExpensesData()">
+                    <option value="ข้อมูลทั้งหมด">ข้อมูลทั้งหมด</option>
+                    <option value="ค่าจ้างลูกจ้างชั่วคราวรายเดือน">ค่าจ้างลูกจ้างชั่วคราวรายเดือน</option>
+                    <option value="ค่าจ้างลูกจ้างชั่วคราวรายวัน">ค่าจ้างลูกจ้างชั่วคราวรายวัน</option>
+                    <option value="ค่าจ้างพนักงานกระทรวงสาธารณสุข">ค่าจ้างพนักงานกระทรวงสาธารณสุข</option>
+                    <option value="ค่าตอบแทนไม่ทำเวชปฏิบัติ">ค่าตอบแทนไม่ทำเวชปฏิบัติ</option>
+                    <option value="เงิน พตส.">เงิน พตส.</option>
+                    <option value="ค่าตอบแทน ฉ.11">ค่าตอบแทน ฉ.11</option>
+                    <option value="ค่าตอบแทน ฉ.12">ค่าตอบแทน ฉ.12</option>
+                    <option value="ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ">ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ</option>
+                    <option value="ค่าตอบแทนเจ้าหน้าที่ปฏิบัติงานเฉพาะบ่าย, ดึก">ค่าตอบแทนเจ้าหน้าที่ปฏิบัติงานเฉพาะบ่าย, ดึก</option>
+                    <option value="อื่น ฯ (ค่าชันสูตรพลิกศพ)">อื่น ฯ (ค่าชันสูตรพลิกศพ)</option>
+                    <option value="เงินสมทบประกันสังคมส่วนของนายจ้าง">เงินสมทบประกันสังคมส่วนของนายจ้าง</option>
+                    <option value="ค่าใช้จ่ายในการเดินทางไปราชการ">ค่าใช้จ่ายในการเดินทางไปราชการ</option>
+                </select>
+            `;
+            
+            filtersContainer.appendChild(personnelFilterGroup);
+        }
+
+        function updatePersonnelExpensesData() {
+            const selectedExpense = document.getElementById('personnel-filter').value;
+            updatePersonnelExpensesMetrics(selectedExpense);
+            updatePersonnelExpensesChart(selectedExpense);
+        }
+
+        function updatePersonnelExpensesMetrics(selectedExpense) {
+            const metricsGrid = document.getElementById('metrics-grid');
+            
+            if (selectedExpense === 'ข้อมูลทั้งหมด') {
+                metricsGrid.innerHTML = ` 
+                `;
+            } else {
+                // Show specific expense data
+                const expenseData = getPersonnelExpenseData(selectedExpense);
+                metricsGrid.innerHTML = `
+                    <div class="card">
+                        <h3>📊 ${selectedExpense}</h3>
+                        <div class="metric">
+                            <span class="metric-label">ปี 2565</span>
+                            <span class="metric-value">${expenseData['2565'].toLocaleString()} บาท</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ปี 2566</span>
+                            <span class="metric-value">${expenseData['2566'].toLocaleString()} บาท</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ปี 2567</span>
+                            <span class="metric-value">${expenseData['2567'].toLocaleString()} บาท</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ปี 2568</span>
+                            <span class="metric-value">${expenseData['2568'].toLocaleString()} บาท</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>📈 แนวโน้มการเปลี่ยนแปลง</h3>
+                        <div class="metric">
+                            <span class="metric-label">2566 เทียบ 2565</span>
+                            <span class="metric-value" style="color: ${getChangeColor(expenseData['2566'], expenseData['2565'])};">${getChangePercent(expenseData['2566'], expenseData['2565'])}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">2567 เทียบ 2566</span>
+                            <span class="metric-value" style="color: ${getChangeColor(expenseData['2567'], expenseData['2566'])};">${getChangePercent(expenseData['2567'], expenseData['2566'])}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">2568 เทียบ 2567</span>
+                            <span class="metric-value" style="color: ${getChangeColor(expenseData['2568'], expenseData['2567'])};">${getChangePercent(expenseData['2568'], expenseData['2567'])}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">แนวโน้มรวม 4 ปี</span>
+                            <span class="metric-value" style="color: ${getChangeColor(expenseData['2568'], expenseData['2565'])};">${getChangePercent(expenseData['2568'], expenseData['2565'])}</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>📋 สรุปข้อมูล</h3>
+                        <div class="metric">
+                            <span class="metric-label">ค่าสูงสุด</span>
+                            <span class="metric-value">${Math.max(...Object.values(expenseData)).toLocaleString()} บาท</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ค่าต่ำสุด</span>
+                            <span class="metric-value">${Math.min(...Object.values(expenseData)).toLocaleString()} บาท</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ค่าเฉลี่ย</span>
+                            <span class="metric-value">${Math.round(Object.values(expenseData).reduce((a, b) => a + b, 0) / 4).toLocaleString()} บาท</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ปีที่สูงสุด</span>
+                            <span class="metric-value">ปี ${Object.keys(expenseData).find(key => expenseData[key] === Math.max(...Object.values(expenseData)))}</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>🎯 สัดส่วนในปี 2568</h3>
+                        <div class="metric">
+                            <span class="metric-label">จำนวนเงิน</span>
+                            <span class="metric-value">${expenseData['2568'].toLocaleString()} บาท</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">สัดส่วนของรวม</span>
+                            <span class="metric-value" style="color: #4c63d2;">${((expenseData['2568'] / 14906254.68) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">อันดับ</span>
+                            <span class="metric-value">${getExpenseRank(selectedExpense)}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">หมวดหมู่</span>
+                            <span class="metric-value">${getExpenseCategory(selectedExpense)}</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>💡 ข้อสังเกต</h3>
+                        <div class="metric">
+                            <span class="metric-label">สถานะ</span>
+                            <span class="metric-value" style="color: ${getExpenseStatus(selectedExpense).color};">${getExpenseStatus(selectedExpense).text}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ความผันแปร</span>
+                            <span class="metric-value">${getExpenseVariability(expenseData)}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">แนวโน้ม</span>
+                            <span class="metric-value">${getExpenseTrend(expenseData)}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ความสำคัญ</span>
+                            <span class="metric-value">${getExpenseImportance(selectedExpense)}</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>📊 เปรียบเทียบกับรวม</h3>
+                        <div class="metric">
+                            <span class="metric-label">ปี 2565</span>
+                            <span class="metric-value">${((expenseData['2565'] / 12624347.80) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ปี 2566</span>
+                            <span class="metric-value">${((expenseData['2566'] / 13671117.91) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ปี 2567</span>
+                            <span class="metric-value">${((expenseData['2567'] / 14532623.81) * 100).toFixed(2)}%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ปี 2568</span>
+                            <span class="metric-value">${((expenseData['2568'] / 14906254.68) * 100).toFixed(2)}%</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function updatePersonnelExpensesChart(selectedExpense = 'ข้อมูลทั้งหมด') {
+            if (revenueChart) {
+                revenueChart.destroy();
+            }
+            
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            
+            if (selectedExpense === 'ข้อมูลทั้งหมด') {
+                revenueChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['2565', '2566', '2567', '2568'],
+                        datasets: [
+                            {
+                                label: 'รวมค่าใช้จ่ายด้านบุคลากร (ล้านบาท)',
+                                data: [12.62, 13.67, 14.53, 14.91],
+                                backgroundColor: '#4c63d2',
+                                borderColor: '#4c63d2',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ (ล้านบาท)',
+                                data: [4.54, 4.54, 5.17, 5.50],
+                                backgroundColor: '#ef4444',
+                                borderColor: '#ef4444',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'ค่าจ้างพนักงานกระทรวงสาธารณสุข (ล้านบาท)',
+                                data: [2.52, 1.76, 2.40, 2.67],
+                                backgroundColor: '#10b981',
+                                borderColor: '#10b981',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'ค่าตอบแทน ฉ.11 (ล้านบาท)',
+                                data: [2.22, 1.90, 1.80, 1.86],
+                                backgroundColor: '#f59e0b',
+                                borderColor: '#f59e0b',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'ค่าจ้างลูกจ้างชั่วคราวรายเดือน (ล้านบาท)',
+                                data: [0.44, 1.91, 1.38, 0.72],
+                                backgroundColor: '#8b5cf6',
+                                borderColor: '#8b5cf6',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    font: {
+                                        family: 'Prompt'
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    font: {
+                                        family: 'Prompt'
+                                    }
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        family: 'Prompt'
+                                    }
+                                }
+                            }
+                        },
+                        onClick: (event, elements) => {
+                            if (elements.length > 0) {
+                                const element = elements[0];
+                                const datasetIndex = element.datasetIndex;
+                                const dataIndex = element.index;
+                                
+                                const dataset = revenueChart.data.datasets[datasetIndex];
+                                const year = revenueChart.data.labels[dataIndex];
+                                const datasetLabel = dataset.label;
+                                
+                                const fullAmount = personnelExpensesDataMapping[datasetLabel][year];
+                                
+                                showDataPopup(datasetLabel, year, fullAmount);
+                            }
+                        }
+                    }
+                });
+            } else {
+                // Show single expense chart
+                const expenseData = getPersonnelExpenseData(selectedExpense);
+                const chartData = Object.keys(expenseData).map(year => expenseData[year] / 1000000); // Convert to millions
+                
+                revenueChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['2565', '2566', '2567', '2568'],
+                        datasets: [
+                            {
+                                label: `${selectedExpense} (ล้านบาท)`,
+                                data: chartData,
+                                borderColor: '#4c63d2',
+                                backgroundColor: '#4c63d2' + '20',
+                                tension: 0.4,
+                                fill: true,
+                                pointBackgroundColor: '#4c63d2',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                pointRadius: 6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    font: {
+                                        family: 'Prompt'
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    font: {
+                                        family: 'Prompt'
+                                    }
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        family: 'Prompt'
+                                    }
+                                }
+                            }
+                        },
+                        onClick: (event, elements) => {
+                            if (elements.length > 0) {
+                                const element = elements[0];
+                                const dataIndex = element.index;
+                                const year = revenueChart.data.labels[dataIndex];
+                                const amount = `${expenseData[year].toLocaleString()} บาท`;
+                                
+                                showDataPopup(selectedExpense, year, amount);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Helper functions for personnel expenses
+        function getPersonnelExpenseData(expenseName) {
+            const expenseDataMap = {
+                'ค่าจ้างลูกจ้างชั่วคราวรายเดือน': { '2565': 441840, '2566': 1909810, '2567': 1384480, '2568': 720270 },
+                'ค่าจ้างลูกจ้างชั่วคราวรายวัน': { '2565': 1356179.55, '2566': 1536720, '2567': 1571200, '2568': 1786640 },
+                'ค่าจ้างพนักงานกระทรวงสาธารณสุข': { '2565': 2523700, '2566': 1761660, '2567': 2395480, '2568': 2668452 },
+                'ค่าตอบแทนไม่ทำเวชปฏิบัติ': { '2565': 665000, '2566': 570000, '2567': 655000, '2568': 640000 },
+                'เงิน พตส.': { '2565': 36000, '2566': 144661.30, '2567': 103500, '2568': 37790.66 },
+                'ค่าตอบแทน ฉ.11': { '2565': 2215841, '2566': 1903671, '2567': 1801700, '2568': 1859785 },
+                'ค่าตอบแทน ฉ.12': { '2565': 354400, '2566': 343200, '2567': 371600, '2568': 389100 },
+                'ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ': { '2565': 4541636.25, '2566': 4544211.25, '2567': 5174111.81, '2568': 5501398.14 },
+                'ค่าตอบแทนเจ้าหน้าที่ปฏิบัติงานเฉพาะบ่าย, ดึก': { '2565': 296160, '2566': 440040, '2567': 569160, '2568': 469080 },
+                'อื่น ฯ (ค่าชันสูตรพลิกศพ)': { '2565': 5250, '2566': 0, '2567': 1500, '2568': 7950 },
+                'เงินสมทบประกันสังคมส่วนของนายจ้าง': { '2565': 129001, '2566': 239218, '2567': 255900, '2568': 214419 },
+                'ค่าใช้จ่ายในการเดินทางไปราชการ': { '2565': 59340, '2566': 277926.36, '2567': 248992, '2568': 611369.88 }
+            };
+            
+            return expenseDataMap[expenseName] || { '2565': 0, '2566': 0, '2567': 0, '2568': 0 };
+        }
+
+        function getChangePercent(current, previous) {
+            if (previous === 0) return current > 0 ? '+∞%' : '0%';
+            const change = ((current - previous) / previous) * 100;
+            return (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+        }
+
+        function getChangeColor(current, previous) {
+            if (current > previous) return '#ef4444'; // Red for increase in expenses
+            if (current < previous) return '#10b981'; // Green for decrease in expenses
+            return '#6b7280'; // Gray for no change
+        }
+
+        function getExpenseRank(expenseName) {
+            const ranks = {
+                'ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ': '1',
+                'ค่าจ้างพนักงานกระทรวงสาธารณสุข': '2',
+                'ค่าตอบแทน ฉ.11': '3',
+                'ค่าจ้างลูกจ้างชั่วคราวรายวัน': '4',
+                'ค่าจ้างลูกจ้างชั่วคราวรายเดือน': '5',
+                'ค่าตอบแทนไม่ทำเวชปฏิบัติ': '6',
+                'ค่าใช้จ่ายในการเดินทางไปราชการ': '7',
+                'ค่าตอบแทนเจ้าหน้าที่ปฏิบัติงานเฉพาะบ่าย, ดึก': '8',
+                'ค่าตอบแทน ฉ.12': '9',
+                'เงินสมทบประกันสังคมส่วนของนายจ้าง': '10',
+                'เงิน พตส.': '11',
+                'อื่น ฯ (ค่าชันสูตรพลิกศพ)': '12'
+            };
+            return ranks[expenseName] || 'N/A';
+        }
+
+        function getExpenseCategory(expenseName) {
+            const categories = {
+                'ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ': 'ค่าตอบแทน',
+                'ค่าจ้างพนักงานกระทรวงสาธารณสุข': 'ค่าจ้าง',
+                'ค่าตอบแทน ฉ.11': 'ค่าตอบแทน',
+                'ค่าจ้างลูกจ้างชั่วคราวรายวัน': 'ค่าจ้าง',
+                'ค่าจ้างลูกจ้างชั่วคราวรายเดือน': 'ค่าจ้าง',
+                'ค่าตอบแทนไม่ทำเวชปฏิบัติ': 'ค่าตอบแทน',
+                'ค่าใช้จ่ายในการเดินทางไปราชการ': 'ค่าใช้สอย',
+                'ค่าตอบแทนเจ้าหน้าที่ปฏิบัติงานเฉพาะบ่าย, ดึก': 'ค่าตอบแทน',
+                'ค่าตอบแทน ฉ.12': 'ค่าตอบแทน',
+                'เงินสมทบประกันสังคมส่วนของนายจ้าง': 'สวัสดิการ',
+                'เงิน พตส.': 'สวัสดิการ',
+                'อื่น ฯ (ค่าชันสูตรพลิกศพ)': 'ค่าใช้สอย'
+            };
+            return categories[expenseName] || 'อื่นๆ';
+        }
+
+        function getExpenseStatus(expenseName) {
+            const statuses = {
+                'ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ': { text: 'เพิ่มขึ้นต่อเนื่อง', color: '#ef4444' },
+                'ค่าจ้างพนักงานกระทรวงสาธารณสุข': { text: 'เพิ่มขึ้น', color: '#f59e0b' },
+                'ค่าตอบแทน ฉ.11': { text: 'คงที่', color: '#10b981' },
+                'ค่าจ้างลูกจ้างชั่วคราวรายวัน': { text: 'เพิ่มขึ้น', color: '#f59e0b' },
+                'ค่าจ้างลูกจ้างชั่วคราวรายเดือน': { text: 'ลดลงมาก', color: '#10b981' },
+                'ค่าตอบแทนไม่ทำเวชปฏิบัติ': { text: 'คงที่', color: '#6b7280' },
+                'ค่าใช้จ่ายในการเดินทางไปราชการ': { text: 'เพิ่มขึ้นมาก', color: '#ef4444' },
+                'ค่าตอบแทนเจ้าหน้าที่ปฏิบัติงานเฉพาะบ่าย, ดึก': { text: 'ผันแปร', color: '#f59e0b' },
+                'ค่าตอบแทน ฉ.12': { text: 'เพิ่มขึ้นเล็กน้อย', color: '#f59e0b' },
+                'เงินสมทบประกันสังคมส่วนของนายจ้าง': { text: 'ผันแปร', color: '#f59e0b' },
+                'เงิน พตส.': { text: 'ลดลงมาก', color: '#10b981' },
+                'อื่น ฯ (ค่าชันสูตรพลิกศพ)': { text: 'ผันแปรมาก', color: '#f59e0b' }
+            };
+            return statuses[expenseName] || { text: 'ไม่ทราบ', color: '#6b7280' };
+        }
+
+        function getExpenseVariability(expenseData) {
+            const values = Object.values(expenseData);
+            const max = Math.max(...values);
+            const min = Math.min(...values);
+            const avg = values.reduce((a, b) => a + b, 0) / values.length;
+            const variance = ((max - min) / avg) * 100;
+            
+            if (variance < 20) return 'ต่ำ';
+            if (variance < 50) return 'ปานกลาง';
+            return 'สูง';
+        }
+
+        function getExpenseTrend(expenseData) {
+            const values = Object.values(expenseData);
+            const firstHalf = (values[0] + values[1]) / 2;
+            const secondHalf = (values[2] + values[3]) / 2;
+            
+            if (secondHalf > firstHalf * 1.1) return 'เพิ่มขึ้น';
+            if (secondHalf < firstHalf * 0.9) return 'ลดลง';
+            return 'คงที่';
+        }
+
+        function getExpenseImportance(expenseName) {
+            const importance = {
+                'ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ': 'สูงมาก',
+                'ค่าจ้างพนักงานกระทรวงสาธารณสุข': 'สูง',
+                'ค่าตอบแทน ฉ.11': 'สูง',
+                'ค่าจ้างลูกจ้างชั่วคราวรายวัน': 'ปานกลาง',
+                'ค่าจ้างลูกจ้างชั่วคราวรายเดือน': 'ปานกลาง',
+                'ค่าตอบแทนไม่ทำเวชปฏิบัติ': 'ปานกลาง',
+                'ค่าใช้จ่ายในการเดินทางไปราชการ': 'ต่ำ',
+                'ค่าตอบแทนเจ้าหน้าที่ปฏิบัติงานเฉพาะบ่าย, ดึก': 'ปานกลาง',
+                'ค่าตอบแทน ฉ.12': 'ปานกลาง',
+                'เงินสมทบประกันสังคมส่วนของนายจ้าง': 'ต่ำ',
+                'เงิน พตส.': 'ต่ำ',
+                'อื่น ฯ (ค่าชันสูตรพลิกศพ)': 'ต่ำมาก'
+            };
+            return importance[expenseName] || 'ไม่ทราบ';
+        }
+
+        function showPersonnelExpensesTable() {
+            // Replace existing tables with personnel expenses table
+            const chartContainer = document.querySelector('.chart-container');
+            chartContainer.innerHTML = `
+                <h3>แนวโน้มรายจ่ายด้านบุคลากร 4 ปี</h3>
+                <canvas id="revenueChart" width="400" height="200"></canvas>
+            `;
+            
+            const dataTableContainer = document.querySelector('.data-table');
+            dataTableContainer.innerHTML = `
+                <h3>ตารางรายจ่ายด้านบุคลากร</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ลำดับ</th>
+                            <th>รายการ</th>
+                            <th>รายจ่าย ปี 65</th>
+                            <th>รายจ่าย ปี 66</th>
+                            <th>รายจ่าย ปี 67</th>
+                            <th>รายจ่าย ปี 68</th>
+                            <th>แนวโน้ม (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: rgba(76, 99, 210, 0.05);">
+                            <td></td>
+                            <td style="font-weight: 600;">รายจ่ายด้านบุคลากร (Fixed Cost)</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">1.1</td>
+                            <td style="padding-left: 20px;">ค่าจ้างลูกจ้างชั่วคราวรายเดือน</td>
+                            <td>441,840.00</td>
+                            <td>1,909,810.00</td>
+                            <td>1,384,480.00</td>
+                            <td>720,270.00</td>
+                            <td style="color: #ef4444;">-47.98%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">1.2</td>
+                            <td style="padding-left: 20px;">ค่าจ้างลูกจ้างชั่วคราวรายวัน</td>
+                            <td>1,356,179.55</td>
+                            <td>1,536,720.00</td>
+                            <td>1,571,200.00</td>
+                            <td>1,786,640.00</td>
+                            <td style="color: #10b981;">+13.72%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">1.3</td>
+                            <td style="padding-left: 20px;">ค่าจ้างพนักงานกระทรวงสาธารณสุข</td>
+                            <td>2,523,700.00</td>
+                            <td>1,761,660.00</td>
+                            <td>2,395,480.00</td>
+                            <td>2,668,452.00</td>
+                            <td style="color: #10b981;">+11.39%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">1.4</td>
+                            <td style="padding-left: 20px;">ค่าตอบแทนไม่ทำเวชปฏิบัติ</td>
+                            <td>665,000.00</td>
+                            <td>570,000.00</td>
+                            <td>655,000.00</td>
+                            <td>640,000.00</td>
+                            <td style="color: #ef4444;">-2.29%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">1.5</td>
+                            <td style="padding-left: 20px;">เงิน พตส.</td>
+                            <td>36,000.00</td>
+                            <td>144,661.30</td>
+                            <td>103,500.00</td>
+                            <td>37,790.66</td>
+                            <td style="color: #ef4444;">-63.48%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">1.6</td>
+                            <td style="padding-left: 20px;">ค่าตอบแทน ฉ.11</td>
+                            <td>2,215,841.00</td>
+                            <td>1,903,671.00</td>
+                            <td>1,801,700.00</td>
+                            <td>1,859,785.00</td>
+                            <td style="color: #10b981;">+3.22%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">1.7</td>
+                            <td style="padding-left: 20px;">ค่าตอบแทน ฉ.12</td>
+                            <td>354,400.00</td>
+                            <td>343,200.00</td>
+                            <td>371,600.00</td>
+                            <td>389,100.00</td>
+                            <td style="color: #10b981;">+4.71%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">1.8</td>
+                            <td style="padding-left: 20px;">ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ</td>
+                            <td>4,541,636.25</td>
+                            <td>4,544,211.25</td>
+                            <td>5,174,111.81</td>
+                            <td>5,501,398.14</td>
+                            <td style="color: #10b981;">+6.32%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">1.9</td>
+                            <td style="padding-left: 20px;">ค่าตอบแทนเจ้าหน้าที่ปฏิบัติงานเฉพาะบ่าย, ดึก</td>
+                            <td>296,160.00</td>
+                            <td>440,040.00</td>
+                            <td>569,160.00</td>
+                            <td>469,080.00</td>
+                            <td style="color: #ef4444;">-17.58%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">1.10</td>
+                            <td style="padding-left: 20px;">อื่น ฯ (ค่าชันสูตรพลิกศพ)</td>
+                            <td>5,250.00</td>
+                            <td>0.00</td>
+                            <td>1,500.00</td>
+                            <td>7,950.00</td>
+                            <td style="color: #10b981;">+430.00%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">2.1</td>
+                            <td style="padding-left: 20px;">เงินสมทบประกันสังคมส่วนของนายจ้าง</td>
+                            <td>129,001.00</td>
+                            <td>239,218.00</td>
+                            <td>255,900.00</td>
+                            <td>214,419.00</td>
+                            <td style="color: #ef4444;">-16.21%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #4c63d2;">2.2</td>
+                            <td style="padding-left: 20px;">ค่าใช้จ่ายในการเดินทางไปราชการ</td>
+                            <td>59,340.00</td>
+                            <td>277,926.36</td>
+                            <td>248,992.00</td>
+                            <td>611,369.88</td>
+                            <td style="color: #10b981;">+145.50%</td>
+                        </tr>
+                        <tr style="background: rgba(76, 99, 210, 0.15); font-weight: 700; color: #4c63d2;">
+                            <td></td>
+                            <td>รวมค่าใช้จ่ายด้านบุคลากร</td>
+                            <td>12,624,347.80</td>
+                            <td>13,671,117.91</td>
+                            <td>14,532,623.81</td>
+                            <td>14,906,254.68</td>
+                            <td style="color: #ef4444;">+2.57%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            // Add the detailed personnel expenses table after the main table
+            const mainContent = document.querySelector('.main-content');
+            const existingDetailedTable = document.getElementById('detailed-personnel-expenses-table');
+            if (existingDetailedTable) {
+                existingDetailedTable.remove();
+            }
+
+            const detailedTable = document.createElement('div');
+            detailedTable.id = 'detailed-personnel-expenses-table';
+            detailedTable.className = 'data-table';
+            detailedTable.style.marginTop = '20px';
+            detailedTable.innerHTML = `
+                <h3>ตารางรายจ่ายด้านบุคลากร - รายละเอียดแนวโน้ม 4 ปี</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ลำดับ</th>
+                            <th>รายการ</th>
+                            <th>รายจ่าย ปี 65</th>
+                            <th>รายจ่าย ปี 66</th>
+                            <th>รายจ่าย ปี 67</th>
+                            <th>รายจ่าย ปี 68</th>
+                            <th>แนวโน้ม (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: rgba(76, 99, 210, 0.05);">
+                            <td></td>
+                            <td style="font-weight: 600; color: #4c63d2;">รายจ่ายด้านบุคลากร (Fixed Cost)</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td rowspan="10" style="text-align: center; font-weight: 600; color: #4c63d2; vertical-align: middle; background: rgba(76, 99, 210, 0.1);">1</td>
+                            <td style="padding-left: 20px;">ค่าจ้างลูกจ้างชั่วคราวรายเดือน</td>
+                            <td>441,840.00</td>
+                            <td>1,909,810.00</td>
+                            <td>1,384,480.00</td>
+                            <td>720,270.00</td>
+                            <td style="color: #ef4444; font-weight: 600;">-47.98%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 20px;">ค่าจ้างลูกจ้างชั่วคราวรายวัน</td>
+                            <td>1,356,179.55</td>
+                            <td>1,536,720.00</td>
+                            <td>1,571,200.00</td>
+                            <td>1,786,640.00</td>
+                            <td style="color: #10b981; font-weight: 600;">+13.72%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 20px;">ค่าจ้างพนักงานกระทรวงสาธารณสุข</td>
+                            <td>2,523,700.00</td>
+                            <td>1,761,660.00</td>
+                            <td>2,395,480.00</td>
+                            <td>2,668,452.00</td>
+                            <td style="color: #10b981; font-weight: 600;">+11.39%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 20px;">ค่าตอบแทนไม่ทำเวชปฏิบัติ</td>
+                            <td>665,000.00</td>
+                            <td>570,000.00</td>
+                            <td>655,000.00</td>
+                            <td>640,000.00</td>
+                            <td style="color: #ef4444; font-weight: 600;">-2.29%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 20px;">เงิน พตส.</td>
+                            <td>36,000.00</td>
+                            <td>144,661.30</td>
+                            <td>103,500.00</td>
+                            <td>37,790.66</td>
+                            <td style="color: #ef4444; font-weight: 600;">-63.48%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 20px;">ค่าตอบแทน ฉ.11</td>
+                            <td>2,215,841.00</td>
+                            <td>1,903,671.00</td>
+                            <td>1,801,700.00</td>
+                            <td>1,859,785.00</td>
+                            <td style="color: #10b981; font-weight: 600;">+3.22%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 20px;">ค่าตอบแทน ฉ.12</td>
+                            <td>354,400.00</td>
+                            <td>343,200.00</td>
+                            <td>371,600.00</td>
+                            <td>389,100.00</td>
+                            <td style="color: #10b981; font-weight: 600;">+4.71%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 20px;">ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ</td>
+                            <td>4,541,636.25</td>
+                            <td>4,544,211.25</td>
+                            <td>5,174,111.81</td>
+                            <td>5,501,398.14</td>
+                            <td style="color: #10b981; font-weight: 600;">+6.32%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 20px;">ค่าตอบแทนเจ้าหน้าที่ปฏิบัติงานเฉพาะบ่าย, ดึก</td>
+                            <td>296,160.00</td>
+                            <td>440,040.00</td>
+                            <td>569,160.00</td>
+                            <td>469,080.00</td>
+                            <td style="color: #ef4444; font-weight: 600;">-17.58%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 20px;">อื่น ฯ (ค่าชันสูตรพลิกศพ)</td>
+                            <td>5,250.00</td>
+                            <td>0.00</td>
+                            <td>1,500.00</td>
+                            <td>7,950.00</td>
+                            <td style="color: #10b981; font-weight: 600;">+430.00%</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2" style="text-align: center; font-weight: 600; color: #4c63d2; vertical-align: middle; background: rgba(76, 99, 210, 0.1);">2</td>
+                            <td style="padding-left: 20px;">เงินสมทบประกันสังคมส่วนของนายจ้าง</td>
+                            <td>129,001.00</td>
+                            <td>239,218.00</td>
+                            <td>255,900.00</td>
+                            <td>214,419.00</td>
+                            <td style="color: #ef4444; font-weight: 600;">-16.21%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 20px;">ค่าใช้จ่ายในการเดินทางไปราชการ</td>
+                            <td>59,340.00</td>
+                            <td>277,926.36</td>
+                            <td>248,992.00</td>
+                            <td>611,369.88</td>
+                            <td style="color: #10b981; font-weight: 600;">+145.50%</td>
+                        </tr>
+                        <tr style="background: rgba(76, 99, 210, 0.15); font-weight: 700; color: #4c63d2;">
+                            <td></td>
+                            <td>รวมค่าใช้จ่ายด้านบุคลากร</td>
+                            <td>12,624,347.80</td>
+                            <td>13,671,117.91</td>
+                            <td>14,532,623.81</td>
+                            <td>14,906,254.68</td>
+                            <td style="color: #ef4444;">+2.57%</td>
+                        </tr>
+                        <tr style="background: rgba(76, 99, 210, 0.05);">
+                            <td colspan="7" style="font-weight: 600; color: #4c63d2; text-align: center;">สรุปแนวโน้มรายจ่ายหลัก</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #ef4444;">สูงสุด</td>
+                            <td style="padding-left: 20px;">ค่าตอบแทนปฏิบัติงานนอกเวลาราชการ</td>
+                            <td colspan="4" style="text-align: center; color: #4c63d2; font-weight: 600;">รายจ่ายสูงสุด 5.5 ล้านบาท (ปี 68)</td>
+                            <td style="color: #10b981; font-weight: 600;">+6.32%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #10b981;">เติบโต</td>
+                            <td style="padding-left: 20px;">ค่าใช้จ่ายในการเดินทางไปราชการ</td>
+                            <td colspan="4" style="text-align: center; color: #4c63d2; font-weight: 600;">เติบโตสูงสุด 145.50%</td>
+                            <td style="color: #10b981; font-weight: 600;">+145.50%</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 600; color: #ef4444;">ลดลง</td>
+                            <td style="padding-left: 20px;">เงิน พตส.</td>
+                            <td colspan="4" style="text-align: center; color: #4c63d2; font-weight: 600;">ลดลงสูงสุด -63.48%</td>
+                            <td style="color: #ef4444; font-weight: 600;">-63.48%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+
+            // Insert the detailed table after the first data table
+            const firstDataTable = document.querySelector('.data-table');
+            firstDataTable.parentNode.insertBefore(detailedTable, firstDataTable.nextSibling);
+
+            // Hide other tables
+            const otherTables = document.querySelectorAll('.data-table:not(:first-of-type):not(#detailed-personnel-expenses-table)');
+            otherTables.forEach(table => table.style.display = 'none');
+            
+            // Re-initialize chart
+            updatePersonnelExpensesChart();
+        }
+
         function showOperatingIncomeTable() {
             // Replace existing tables with operating income table
             const chartContainer = document.querySelector('.chart-container');
@@ -3266,6 +4086,5 @@
             }
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'998107b2024e7323',t:'MTc2MjA1OTIyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99814fbb729a731d',t:'MTc2MjA2MjE3Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
