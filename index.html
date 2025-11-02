@@ -990,32 +990,57 @@
         }
 
         function selectSubmenu(element, sectionName) {
-            // Remove active class from all submenu items
-            document.querySelectorAll('.submenu-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Add active class to clicked item
-            element.classList.add('active');
-            
-            // Update current section
-            currentSection = sectionName;
-            document.getElementById('current-section').textContent = sectionName;
-            
-            // Show/hide filters based on section
-            updateFiltersVisibility(sectionName);
-            
-            // Update data display based on section
-            if (sectionName === 'รายรับสิทธิการรักษา') {
-                showRevenueRightsData();
-            } else if (sectionName === 'รายได้อื่นๆ') {
-                showOtherIncomeData();
-            } else if (sectionName === 'รายได้จากการดำเนินการ') {
-                showOperatingIncomeData();
-            } else {
-                updateData();
-            }
-        }
+    // Remove active class from all submenu items
+    document.querySelectorAll('.submenu-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Add active class to clicked item
+    element.classList.add('active');
+    
+    // Update current section
+    currentSection = sectionName;
+    document.getElementById('current-section').textContent = sectionName;
+    
+    // Show/hide filters based on section
+    updateFiltersVisibility(sectionName);
+
+    // ✅ เพิ่มส่วนนี้เข้ามา
+    const expensesMenus = [
+        'รายจ่ายด้านบุคลากร',
+        'ค่าใช้สอย Maintainance ระบบ',
+        'ค่าสาธารณูปโภค',
+        'ค่ายาและเวชภัณฑ์',
+        'ค่าวัสดุทั่วไป',
+        'ค่าใช้จ่ายตามแผนงาน/โครงการ',
+        'ค่าใช้จ่ายในการลงทุน',
+        'สนับสนุนให้ รพ.สต. และ สสอ.',
+        'ค่าใช้จ่าย อื่นๆ',
+        'ค่าใช้จ่ายเงินบริจาค'
+    ];
+
+    if (expensesMenus.includes(sectionName)) {
+        // 🔹 ซ่อนทุกอย่างให้เป็นหน้าว่าง
+        document.getElementById('filters-container').style.display = 'none';  // ซ่อนตัวกรองทั้งหมด
+        document.getElementById('metrics-grid').innerHTML = '<div style="padding:60px; text-align:center; color:#6b7280;">ยังไม่มีข้อมูลสำหรับหมวดรายจ่าย</div>';
+        document.querySelectorAll('.data-table').forEach(table => table.style.display = 'none');
+        document.querySelector('.chart-container').style.display = 'none';
+        return; // ออกจากฟังก์ชัน ไม่ให้ไปเรียก updateData()
+    }
+
+    // Update data display based on section
+    if (sectionName === 'รายรับสิทธิการรักษา') {
+        showRevenueRightsData();
+    } else if (sectionName === 'รายได้อื่นๆ') {
+        showOtherIncomeData();
+    } else if (sectionName === 'รายได้จากการดำเนินการ') {
+        showOperatingIncomeData();
+    } else {
+        updateData();
+    }
+}
+
+
 
         function updateFiltersVisibility(sectionName) {
             const departmentFilter = document.getElementById('department-filter-group');
