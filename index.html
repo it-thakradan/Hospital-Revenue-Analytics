@@ -491,6 +491,27 @@
      <h2 id="current-section">รายได้ของโรงพยาบาล</h2>
      <p>ข้อมูลการวิเคราะห์และสรุปผลการดำเนินงาน</p>
     </div>
+    <!-- หลัง content-header -->
+<div class="personnel-filters" id="personnel-filters" style="display: none; margin-bottom: 20px;">
+  <div class="filter-group">
+    <label for="personnel-filter">ประเภทค่าใช้จ่ายด้านบุคลากร</label>
+    <select id="personnel-filter" onchange="updatePersonnelExpensesChart()">
+      <option value="all">ข้อมูลทั้งหมด</option>
+      <option value="ลูกจ้างชั่วคราวรายเดือน">ลูกจ้างชั่วคราวรายเดือน</option>
+      <option value="ลูกจ้างชั่วคราวรายวัน">ลูกจ้างชั่วคราวรายวัน</option>
+      <option value="พนักงานกระทรวงสาธารณสุข">พนักงานกระทรวงสาธารณสุข</option>
+      <option value="ค่าตอบแทนไม่ทำเวชปฏิบัติ">ค่าตอบแทนไม่ทำเวชปฏิบัติ</option>
+      <option value="เงิน พตส.">เงิน พตส.</option>
+      <option value="ฉ.11">ฉ.11</option>
+      <option value="ฉ.12">ฉ.12</option>
+      <option value="ปฏิบัติงานนอกเวลาราชการ">ปฏิบัติงานนอกเวลาราชการ</option>
+      <option value="ปฏิบัติงานเฉพาะบ่าย, ดึก">ปฏิบัติงานเฉพาะบ่าย, ดึก</option>
+      <option value="อื่น ฯ (ค่าชันสูตรพลิกศพ)">อื่น ฯ (ค่าชันสูตรพลิกศพ)</option>
+      <option value="เงินสมทบประกันสังคมส่วนของนายจ้าง">เงินสมทบประกันสังคมส่วนของนายจ้าง</option>
+      <option value="การเดินทางไปราชการ">การเดินทางไปราชการ</option>
+    </select>
+  </div>
+</div>
     <div class="filters" id="filters-container">
      <div class="filter-group"><label for="year-filter">ปี</label> <select id="year-filter" onchange="updateData()"> <option value="all">ข้อมูลทั้งหมด</option> <option value="2568">2568</option> <option value="2567">2567</option> <option value="2566">2566</option> <option value="2565">2565</option> </select>
      </div>
@@ -990,34 +1011,44 @@
         }
 
         function selectSubmenu(element, sectionName) {
-            // Remove active class from all submenu items
-            document.querySelectorAll('.submenu-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Add active class to clicked item
-            element.classList.add('active');
-            
-            // Update current section
-            currentSection = sectionName;
-            document.getElementById('current-section').textContent = sectionName;
-            
-            // Show/hide filters based on section
-            updateFiltersVisibility(sectionName);
-            
-            // Update data display based on section
-            if (sectionName === 'รายรับสิทธิการรักษา') {
-                showRevenueRightsData();
-            } else if (sectionName === 'รายได้อื่นๆ') {
-                showOtherIncomeData();
-            } else if (sectionName === 'รายได้จากการดำเนินการ') {
-                showOperatingIncomeData();
-            } else if (sectionName === 'รายจ่ายด้านบุคลากร') {
-                showPersonnelExpensesData();
-            } else {
-                updateData();
-            }
+    // Remove active class from all submenu items
+    document.querySelectorAll('.submenu-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Add active class to clicked item
+    element.classList.add('active');
+    
+    // Update current section
+    currentSection = sectionName;
+    document.getElementById('current-section').textContent = sectionName;
+    
+    // Show/hide filters based on section
+    updateFiltersVisibility(sectionName);
+    
+    // Update data display based on section
+    if (sectionName === 'รายรับสิทธิการรักษา') {
+        showRevenueRightsData();
+    } else if (sectionName === 'รายได้อื่นๆ') {
+        showOtherIncomeData();
+    } else if (sectionName === 'รายได้จากการดำเนินการ') {
+        showOperatingIncomeData();
+    } else if (sectionName === 'รายจ่ายด้านบุคลากร') {
+        showPersonnelExpensesData();
+    } else {
+        updateData();
+    }
+
+    // 🔹 เพิ่มส่วนนี้เข้ามา (ก่อนปิดวงเล็บฟังก์ชัน)
+    const personnelFilterDiv = document.getElementById('personnel-filters');
+    if (personnelFilterDiv) {
+        if (sectionName === 'รายจ่ายด้านบุคลากร') {
+            personnelFilterDiv.style.display = 'flex';
+        } else {
+            personnelFilterDiv.style.display = 'none';
         }
+    }
+}
 
         function updateFiltersVisibility(sectionName) {
             const departmentFilter = document.getElementById('department-filter-group');
@@ -2360,9 +2391,15 @@
         };
 
         function showPersonnelExpensesData() {
-            // Hide filters for this section
-            document.getElementById('filters-container').style.display = 'none';
-            
+    // แสดงตัวกรองเฉพาะรายจ่ายด้านบุคลากร
+    const personnelFilterDiv = document.getElementById('personnel-filters');
+    if (personnelFilterDiv) {
+        personnelFilterDiv.style.display = 'flex';
+    }
+
+    // ซ่อน filters-container ปกติ
+    document.getElementById('filters-container').style.display = 'none';
+        
             // Update metrics to show personnel expenses summary
             const metricsGrid = document.getElementById('metrics-grid');
             metricsGrid.innerHTML = `
@@ -2415,148 +2452,99 @@
         }
 
         function updatePersonnelExpensesChart() {
-            if (revenueChart) {
-                revenueChart.destroy();
-            }
-            
-            const ctx = document.getElementById('revenueChart').getContext('2d');
-            revenueChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['2565', '2566', '2567', '2568'],
-                    datasets: [
-                        {
-                            label: 'ลูกจ้างชั่วคราวรายเดือน',
-                            data: [441840, 1909810, 1384480, 720270],
-                            backgroundColor: '#4c63d2',
-                            borderColor: '#4c63d2',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'ลูกจ้างชั่วคราวรายวัน',
-                            data: [1356179.55, 1536720, 1571200, 1786640],
-                            backgroundColor: '#4c63d2',
-                            borderColor: '#4c63d2',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'พนักงานกระทรวงสาธารณสุข',
-                            data: [2523700, 1761660, 2395480, 2668452],
-                            backgroundColor: '#10b981',
-                            borderColor: '#10b981',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'ค่าตอบแทนไม่ทำเวชปฏิบัติ',
-                            data: [665000, 570000, 655000, 640000],
-                            backgroundColor: '#10b981',
-                            borderColor: '#10b981',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'เงิน พตส.',
-                            data: [36000, 144661.3, 103500, 37790.66],
-                            backgroundColor: '#10b981',
-                            borderColor: '#10b981',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'ฉ.11',
-                            data: [2215841, 1903671, 1801700, 1859785],
-                            backgroundColor: '#f59e0b',
-                            borderColor: '#f59e0b',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'ฉ.12',
-                            data: [354400,343200,371600,389100],
-                            backgroundColor: '#f55e0b',
-                            borderColor: '#f55e0b',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'ปฏิบัติงานนอกเวลาราชการ',
-                            data: [4541636.25, 4544211.25, 5174111.81, 5501398.14],
-                            backgroundColor: '#4c63d2',
-                            borderColor: '#4c63d2',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'ปฏิบัติงานเฉพาะบ่าย, ดึก',
-                            data: [296160, 440040, 569160, 469080],
-                            backgroundColor: '#10b981',
-                            borderColor: '#10b981',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'อื่น ฯ (ค่าชันสูตรพลิกศพ)',
-                            data: [5250, 0, 1500, 7950],
-                            backgroundColor: '#ef4444',
-                            borderColor: '#ef4444',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'เงินสมทบประกันสังคมส่วนของนายจ้าง',
-                            data: [129001, 239218, 255900, 214419],
-                            backgroundColor: '#ef4444',
-                            borderColor: '#ef4444',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'การเดินทางไปราชการ',
-                            data: [59340, 277926.36, 248992, 611369.88],
-                            backgroundColor: '#ef4444',
-                            borderColor: '#ef4444',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                font: {
-                                    family: 'Prompt'
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                font: {
-                                    family: 'Prompt'
-                                }
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                font: {
-                                    family: 'Prompt'
-                                }
-                            }
-                        }
-                    },
-                    onClick: (event, elements) => {
-                        if (elements.length > 0) {
-                            const element = elements[0];
-                            const datasetIndex = element.datasetIndex;
-                            const dataIndex = element.index;
-                            
-                            const dataset = revenueChart.data.datasets[datasetIndex];
-                            const year = revenueChart.data.labels[dataIndex];
-                            const datasetLabel = dataset.label;
-                            
-                            const fullAmount = personnelExpensesDataMapping[datasetLabel][year];
-                            
-                            showDataPopup(datasetLabel, year, fullAmount);
-                        }
-                    }
-                }
+    // 🔹 ตรวจสอบค่าที่เลือกจาก dropdown
+    const selectedType = document.getElementById('personnel-filter')?.value || 'all';
+
+    // 🔹 ล้างกราฟเก่า
+    if (revenueChart) {
+        revenueChart.destroy();
+    }
+
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const labels = ['2565', '2566', '2567', '2568'];
+
+    // 🔹 เก็บข้อมูลรายปีแยกตามประเภท (ข้อมูลของคุณเหมือนเดิม)
+    const dataMap = {
+        'ลูกจ้างชั่วคราวรายเดือน': [441840, 1909810, 1384480, 720270],
+        'ลูกจ้างชั่วคราวรายวัน': [1356179.55, 1536720, 1571200, 1786640],
+        'พนักงานกระทรวงสาธารณสุข': [2523700, 1761660, 2395480, 2668452],
+        'ค่าตอบแทนไม่ทำเวชปฏิบัติ': [665000, 570000, 655000, 640000],
+        'เงิน พตส.': [36000, 144661.3, 103500, 37790.66],
+        'ฉ.11': [2215841, 1903671, 1801700, 1859785],
+        'ฉ.12': [354400, 343200, 371600, 389100],
+        'ปฏิบัติงานนอกเวลาราชการ': [4541636.25, 4544211.25, 5174111.81, 5501398.14],
+        'ปฏิบัติงานเฉพาะบ่าย, ดึก': [296160, 440040, 569160, 469080],
+        'อื่น ฯ (ค่าชันสูตรพลิกศพ)': [5250, 0, 1500, 7950],
+        'เงินสมทบประกันสังคมส่วนของนายจ้าง': [129001, 239218, 255900, 214419],
+        'การเดินทางไปราชการ': [59340, 277926.36, 248992, 611369.88]
+    };
+
+    // 🔹 ถ้าเลือก "ข้อมูลทั้งหมด" ให้รวมทุกชุดข้อมูล
+    let datasets = [];
+    if (selectedType === 'all') {
+        Object.entries(dataMap).forEach(([key, values]) => {
+            datasets.push({
+                label: key,
+                data: values,
+                backgroundColor: getColorForType(key),
+                borderColor: getColorForType(key),
+                borderWidth: 1
             });
+        });
+    } else {
+        // 🔹 ถ้าเลือกเฉพาะหมวดเดียว ให้แสดงเฉพาะชุดนั้น
+        datasets.push({
+            label: selectedType,
+            data: dataMap[selectedType],
+            backgroundColor: '#4c63d2',
+            borderColor: '#4c63d2',
+            borderWidth: 1
+        });
+    }
+
+    // 🔹 สร้างกราฟ
+    revenueChart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: { font: { family: 'Prompt' } }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { font: { family: 'Prompt' } }
+                },
+                x: {
+                    ticks: { font: { family: 'Prompt' } }
+                }
+            }
         }
+    });
+}
+
+// 🎨 ฟังก์ชันสุ่มสีหรือกำหนดสีซ้ำจากหมวด
+function getColorForType(type) {
+    const colorMap = {
+        'ลูกจ้างชั่วคราวรายเดือน': '#4c63d2',
+        'ลูกจ้างชั่วคราวรายวัน': '#3b82f6',
+        'พนักงานกระทรวงสาธารณสุข': '#10b981',
+        'ค่าตอบแทนไม่ทำเวชปฏิบัติ': '#22c55e',
+        'เงิน พตส.': '#84cc16',
+        'ฉ.11': '#f59e0b',
+        'ฉ.12': '#f97316',
+        'ปฏิบัติงานนอกเวลาราชการ': '#6366f1',
+        'ปฏิบัติงานเฉพาะบ่าย, ดึก': '#0ea5e9',
+        'อื่น ฯ (ค่าชันสูตรพลิกศพ)': '#ef4444',
+        'เงินสมทบประกันสังคมส่วนของนายจ้าง': '#e11d48',
+        'การเดินทางไปราชการ': '#6b7280'
+    };
+    return colorMap[type] || '#4c63d2';
+}
+
 
         function showPersonnelExpensesTable() {
             // Replace existing tables with personnel expenses table
